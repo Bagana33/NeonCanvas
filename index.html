@@ -273,9 +273,26 @@ o
       return Array.isArray(data) ? data.map(normaliseRow).filter(Boolean) : [];
     };
 
+    const deletePost = async (post) => {
+      if (!supabaseClient) return false;
+      if (!post) return false;
+      const targetId = post._supabaseId || post.id;
+      if (!targetId) return false;
+      const { error } = await supabaseClient
+        .from(POSTS_TABLE)
+        .delete()
+        .eq("id", targetId);
+      if (error) {
+        console.error("Supabase delete failed", error);
+        throw error;
+      }
+      return true;
+    };
+
     window.supabaseClient = supabaseClient;
     window.savePostToSupabase = savePost;
     window.loadPostsFromSupabase = loadPosts;
+    window.deletePostFromSupabase = deletePost;
   </script>
 </head>
 <body>
@@ -984,7 +1001,7 @@ o
           '</div>'+
           '<div class="actions"><div class="react-row">'+
           Object.keys(REACTION_POINTS).map(function(r){ var count=(post.reactions && post.reactions[r]) ? post.reactions[r] : 0; var icon=REACTION_EMOJI[r] || '✨'; return '<button class="react-btn" data-action="react" data-reaction="'+r+'" data-post="'+post.id+'" aria-label="'+r+'"><span class="react-emoji" aria-hidden="true">'+icon+'</span><span class="react-count">'+count+'</span></button>'; }).join("")+
-          '</div><div class="comment-meta"><button class="btn" data-action="toggle-comments" data-post="'+post.id+'">Comments <span class="comment-count">'+(((post.comments&&post.comments.length)||0))+'</span></button><button class="btn pink" data-action="share" data-post="'+post.id+'">Share</button></div></div>'+
+          '</div><div class="comment-meta"><button class="btn" data-action="toggle-comments" data-post="'+post.id+'">Comments <span class="comment-count">'+(((post.comments&&post.comments.length)||0))+'</span></button>'+(String(post.userId)===String(me.id)? '<button class="btn ghost" data-action="delete-post" data-post="'+post.id+'">Delete</button>' : '')+'<button class="btn pink" data-action="share" data-post="'+post.id+'">Share</button></div></div>'+
           '<div class="comment-list">'+
           (function(){
             var cs = post.comments || [];
@@ -1305,6 +1322,36 @@ o
       setTimeout(function(){ var el = document.querySelector('article.post[data-post="'+newPost.id+'"]'); if(el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"center" }); },0);
     }
 
+    function removePost(postId){
+      var idx=-1; var postIdStr = String(postId);
+      for(var i=0;i<state.posts.length;i++){
+        if(String(state.posts[i].id)===postIdStr){ idx=i; break; }
+      }
+      if(idx<0) return;
+      var post=state.posts[idx];
+      if(String(post.userId) !== String(me.id)){
+        alert('Та зөвхөн өөрийнхөө постыг устгаж чадна.');
+        return;
+      }
+      if(!confirm('Энэ постыг устгах уу?')) return;
+      state.posts.splice(idx,1);
+      saveState();
+      recalcUserPoints();
+      render();
+      broadcast('POSTS_UPDATED', null);
+      notify('Post removed');
+      if(window.deletePostFromSupabase){
+        try{
+          var supaPromise = window.deletePostFromSupabase(post);
+          if(supaPromise && typeof supaPromise.then === "function"){
+            supaPromise.then(function(){ return syncPostsFromSupabase({force:true}); }).catch(function(err){ console.warn("Supabase deletePostFromSupabase failed", err); syncPostsFromSupabase({force:true}); });
+          }
+        }catch(err){
+          console.warn("Supabase deletePostFromSupabase threw", err);
+        }
+      }
+    }
+
     // ------- Sync -------
     function setupSync(){
       if(bus){
@@ -1378,6 +1425,7 @@ o
             state.openComments[pid] = !state.openComments[pid]; renderFeed();
             if(state.openComments[pid]){ var art = document.querySelector('article.post[data-post="'+pid+'"]'); if(art && art.scrollIntoView) art.scrollIntoView({behavior:'smooth', block:'center'}); }
           } else if(action==="comment"){ var id=+btn.dataset.post; var wrap=btn.closest(".composer-actions"); var input=wrap? wrap.querySelector("input") : null; var val=input? input.value : ""; if(input && input.dataset && input.dataset.replyTo){ var replyTo = +input.dataset.replyTo; handleCommentReply(id, replyTo, val); input.dataset.replyTo = ""; } else { handleComment(id, val); } if(input) input.value=""; }
+          else if(action==="delete-post"){ var idDel = btn.dataset.post; removePost(idDel); }
           else if(action==="reply"){ var pid = +btn.dataset.post; var cid = +btn.dataset.comment; var author = getUserById((function(){ var p=state.posts.filter(function(x){return x.id===pid;})[0]; var cs = p && p.comments? p.comments : []; for(var i=0;i<cs.length;i++){ if(cs[i].id===cid) return cs[i].userId; } return null; })()); var authName = author? (author.name||'') : ''; var inputEl = document.querySelector('.composer-actions input[data-post="'+pid+'"]'); if(inputEl){ inputEl.value = '@'+authName+' '; inputEl.focus(); inputEl.dataset.replyTo = cid; } }
           else if(action==="share"){ var id=+btn.dataset.post; if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(location.href).catch(function(){}); notify("Post link copied to clipboard"); renderNotifications(); saveState(); }
         }
