@@ -22,9 +22,11 @@
     .muted{color:var(--muted);font-size:13px}
     .empty{color:var(--muted);padding:12px}
     .controls{display:flex;gap:8px;margin-bottom:8px}
-    .btn{background:linear-gradient(90deg,#06b6d4,#7c3aed);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
-    .small{font-size:13px;color:var(--muted)}
-    use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
+  .btn{background:linear-gradient(90deg,#06b6d4,#7c3aed);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .small{font-size:13px;color:var(--muted)}
+  use-chat-gpt-ai, use-chat-gpt-ai-content-menu,
+  use-chat-gpt-ai *, use-chat-gpt-ai-content-menu *,
+  [class*="use-chat-gpt-ai"], [class*="use-chat-gpt-ai-content-menu"]{display:none !important}
   </style>
 </head>
 <body>
@@ -53,7 +55,12 @@
   </div>
   <script>
     (function removeInjectedChat(){
-      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      var selectors=[
+        'use-chat-gpt-ai',
+        'use-chat-gpt-ai-content-menu',
+        '[class*="use-chat-gpt-ai-content-menu"]',
+        '[class*="use-chat-gpt-ai"]'
+      ];
       function purge(root){
         if(!root || !root.querySelectorAll) return;
         selectors.forEach(function(sel){

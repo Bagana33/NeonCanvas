@@ -29,7 +29,9 @@
     .btn.ghost{background:var(--panel2);border:1px solid #172033}
     .actions{display:flex;gap:8px;margin-top:16px}
     .small{font-size:12px;color:#a5b4fc}
-    use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
+  use-chat-gpt-ai, use-chat-gpt-ai-content-menu,
+  use-chat-gpt-ai *, use-chat-gpt-ai-content-menu *,
+  [class*="use-chat-gpt-ai"], [class*="use-chat-gpt-ai-content-menu"]{display:none !important}
   </style>
 </head>
 <body>
@@ -67,7 +69,12 @@
 
   <script>
     (function removeInjectedChat(){
-      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      var selectors=[
+        'use-chat-gpt-ai',
+        'use-chat-gpt-ai-content-menu',
+        '[class*="use-chat-gpt-ai-content-menu"]',
+        '[class*="use-chat-gpt-ai"]'
+      ];
       function purge(root){
         if(!root || !root.querySelectorAll) return;
         selectors.forEach(function(sel){

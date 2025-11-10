@@ -24,7 +24,9 @@
     .footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;color:var(--muted)}
     .download{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
   .score-badge{font-weight:700;padding:6px 10px;border-radius:8px}
-  use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
+  use-chat-gpt-ai, use-chat-gpt-ai-content-menu,
+  use-chat-gpt-ai *, use-chat-gpt-ai-content-menu *,
+  [class*="use-chat-gpt-ai"], [class*="use-chat-gpt-ai-content-menu"]{display:none !important}
     .good{background:rgba(34,197,94,0.12);color:var(--good)}
     .avg{background:rgba(234,179,8,0.09);color:#d97706}
     .bad{background:rgba(239,68,68,0.08);color:var(--bad)}
@@ -58,7 +60,12 @@
 
   <script>
     (function removeInjectedChat(){
-      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      var selectors=[
+        'use-chat-gpt-ai',
+        'use-chat-gpt-ai-content-menu',
+        '[class*="use-chat-gpt-ai-content-menu"]',
+        '[class*="use-chat-gpt-ai"]'
+      ];
       function purge(root){
         if(!root || !root.querySelectorAll) return;
         selectors.forEach(function(sel){

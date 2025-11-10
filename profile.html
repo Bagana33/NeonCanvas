@@ -49,9 +49,11 @@
     .react-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     .react-btn{background:#0b1220;border:1px solid #172033;border-radius:999px;padding:6px 10px;font-size:13px;color:#e5e7eb;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
     .react-emoji{font-size:16px}.react-count{font-size:12px;padding:2px 6px;border-radius:999px;background:rgba(148,163,184,.12);color:#cbd5e1}
-    .notifs{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:8px}.notif{background:#06101a;padding:8px;border-radius:8px;color:#cbd5e1;font-size:14px}
-    @media (max-width: 900px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
-    use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
+  .notifs{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:8px}.notif{background:#06101a;padding:8px;border-radius:8px;color:#cbd5e1;font-size:14px}
+  @media (max-width: 900px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+  use-chat-gpt-ai, use-chat-gpt-ai-content-menu,
+  use-chat-gpt-ai *, use-chat-gpt-ai-content-menu *,
+  [class*="use-chat-gpt-ai"], [class*="use-chat-gpt-ai-content-menu"]{display:none !important}
   </style>
 </head>
 <body>
@@ -130,7 +132,12 @@
 
   <script>
     (function removeInjectedChat(){
-      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      var selectors=[
+        'use-chat-gpt-ai',
+        'use-chat-gpt-ai-content-menu',
+        '[class*="use-chat-gpt-ai-content-menu"]',
+        '[class*="use-chat-gpt-ai"]'
+      ];
       function purge(root){
         if(!root || !root.querySelectorAll) return;
         selectors.forEach(function(sel){
