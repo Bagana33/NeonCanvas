@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Game — Poster Match</title>
+  <style>
+    :root{--bg:#0b1220;--panel:#071126;--accent:#7c3aed;--muted:#94a3b8;--ink:#e5e7eb}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--ink);background:linear-gradient(180deg,#071025 0%, #071126 60%)}
+    .wrap{max-width:1100px;margin:28px auto;display:grid;grid-template-columns:1fr 360px;gap:24px;padding:16px}
+    .card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:14px}
+    h1{margin:0 0 12px;font-size:18px}
+    .canvas-row{display:flex;gap:12px;align-items:center}
+    canvas{background:linear-gradient(180deg,#0d1624,#0b1220);border-radius:8px;border:1px solid rgba(255,255,255,0.04)}
+    .controls{display:flex;flex-direction:column;gap:10px}
+    .palette{display:flex;gap:8px;flex-wrap:wrap}
+    .swatch{width:34px;height:34px;border-radius:6px;border:2px solid rgba(255,255,255,0.04);cursor:pointer}
+    .selected{outline:2px solid rgba(124,58,237,.9);transform:scale(1.04)}
+    .btn{padding:8px 12px;border-radius:999px;border:0;background:linear-gradient(90deg,var(--accent),#ec4899);color:white;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;align-items:center}
+    .score{font-weight:700;font-size:18px}
+    .hint{font-size:13px;color:#b6c3d6}
+    .small{font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Poster Match — recreate the target</h1>
+      <div class="muted">Click shapes on the right to change their color using the palette. Press Check to score.</div>
+      <div style="height:16px"></div>
+      <div class="canvas-row">
+        <div style="text-align:center">
+          <div class="muted">Target</div>
+          <canvas id="target" width="420" height="560"></canvas>
+        </div>
+        <div style="text-align:center">
+          <div class="muted">Your design</div>
+          <canvas id="player" width="420" height="560"></canvas>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="row">
+        <button id="randomize" class="btn">New Target</button>
+        <button id="check" class="btn" style="background:linear-gradient(90deg,#06b6d4,#7c3aed)">Check</button>
+        <div style="flex:1"></div>
+        <div class="score" id="score">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h1 style="font-size:16px">Controls</h1>
+      <div class="muted">Palette — pick a color then click a shape on the right canvas to apply</div>
+      <div style="height:10px"></div>
+      <div class="palette" id="palette"></div>
+      <div style="height:8px"></div>
+      <div class="controls">
+        <div class="muted small">Selected shape: <span id="selected-shape">None</span></div>
+        <div class="muted small">Time: <span id="timer">0s</span></div>
+        <div class="muted hint">Tip: match color hue and brightness to get higher score. Lower distance = better.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mini Poster Match Game
+    // Layout: both canvases draw 3 rectangle bands and a central circle. Target has random colors; player can change shape colors.
+    var targetCanvas = document.getElementById('target'); var tctx = targetCanvas.getContext('2d');
+    var playerCanvas = document.getElementById('player'); var pctx = playerCanvas.getContext('2d');
+    var paletteEl = document.getElementById('palette'); var selectedColor = null; var selectedShape = null;
+    var scoreEl = document.getElementById('score'); var timerEl = document.getElementById('timer');
+    var width = targetCanvas.width, height = targetCanvas.height;
+
+    // Game state
+    var shapes = [ 'band1','band2','band3','circle' ];
+    var targetColors = {}; var playerColors = {};
+
+    function randColor(){ // random pleasant color in HSL
+      var h = Math.floor(Math.random()*360); var s = 55 + Math.random()*30; var l = 40 + Math.random()*20; return {h:h,s:s,l:l}; }
+    function hslToCss(c){ return 'hsl('+Math.round(c.h)+','+Math.round(c.s)+'%,'+Math.round(c.l)+'%)'; }
+    function hslToRgb(c){ // returns {r,g,b}
+      var h=c.h/360, s=c.s/100, l=c.l/100; var r,g,b;
+      if(s===0){ r=g=b=l; } else {
+        function hue2rgb(p,q,t){ if(t<0) t+=1; if(t>1) t-=1; if(t<1/6) return p+(q-p)*6*t; if(t<1/2) return q; if(t<2/3) return p+(q-p)*(2/3-t)*6; return p; }
+        var q = l<0.5 ? l*(1+s) : l+s-l*s; var p = 2*l-q; r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3);
+      }
+      return {r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255)};
+    }
+    function colorDistance(c1,c2){ var a=hslToRgb(c1), b=hslToRgb(c2); var dr=a.r-b.r, dg=a.g-b.g, db=a.b-b.b; return Math.sqrt(dr*dr+dg*dg+db*db); }
+
+    function drawPoster(ctx, cols){ // cols: map shape->hsl
+      // background
+      ctx.clearRect(0,0,width,height);
+      var pad=22; var bandH = (height - pad*2)/3;
+      // top band
+      ctx.fillStyle = hslToCss(cols.band1); ctx.fillRect(pad,pad,width-pad*2,bandH-6);
+      // middle
+      ctx.fillStyle = hslToCss(cols.band2); ctx.fillRect(pad,pad+bandH,width-pad*2,bandH-6);
+      // bottom
+      ctx.fillStyle = hslToCss(cols.band3); ctx.fillRect(pad,pad+bandH*2,width-pad*2,bandH-6);
+      // circle centered overlapping bands
+      ctx.beginPath(); ctx.fillStyle=hslToCss(cols.circle);
+      ctx.arc(width/2, height/2, Math.min(width,height)/6, 0, Math.PI*2); ctx.fill();
+      // small decorative box
+      ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1; ctx.strokeRect(pad+6,pad+6,60,22);
+    }
+
+    function newTarget(){ targetColors={}; playerColors={}; shapes.forEach(function(s){ targetColors[s]=randColor(); playerColors[s]=Object.assign({}, targetColors[s]); }); // start player equal to target for easy start
+      // then slightly perturb player colors to make it challenging
+      shapes.forEach(function(s){ playerColors[s].h = (playerColors[s].h + (Math.random()*60-30)+360)%360; playerColors[s].l = Math.max(12, Math.min(86, playerColors[s].l + (Math.random()*18-9))); });
+      drawPoster(tctx,targetColors); drawPoster(pctx,playerColors); scoreEl.textContent='—';
+      startTimer(); }
+
+    // Palette: generate 12 selectable swatches from HSL variations
+    function buildPalette(){ paletteEl.innerHTML=''; var base = Math.floor(Math.random()*360); for(var i=0;i<12;i++){ var c={h:(base + i*30)%360, s:60, l:50}; var el=document.createElement('div'); el.className='swatch'; el.style.background = hslToCss(c); el.dataset.h = c.h; el.dataset.s = c.s; el.dataset.l = c.l; el.title = hslToCss(c);
+        el.addEventListener('click', function(){ selectColor({h:+this.dataset.h,s:+this.dataset.s,l:+this.dataset.l}, this); }); paletteEl.appendChild(el); } }
+    function selectColor(c,el){ selectedColor = c; // highlight
+      $$('.swatch').forEach(function(x){ x.classList.remove('selected'); }); if(el) el.classList.add('selected'); }
+
+    // handle clicking shapes on player canvas
+    playerCanvas.addEventListener('click', function(ev){ var rect=playerCanvas.getBoundingClientRect(); var x=ev.clientX-rect.left, y=ev.clientY-rect.top; var pad=22; var bandH=(height-pad*2)/3; var which=null; if(y>=pad && y<pad+bandH-6) which='band1'; else if(y>=pad+bandH && y<pad+bandH*2-6) which='band2'; else if(y>=pad+bandH*2 && y<pad+bandH*3-6) which='band3'; // circle
+      var dx=x-width/2, dy=y-height/2; if(Math.sqrt(dx*dx+dy*dy) < Math.min(width,height)/6) which='circle'; if(!which) return; selectedShape=which; document.getElementById('selected-shape').textContent = which; if(selectedColor){ playerColors[which]=Object.assign({}, selectedColor); drawPoster(pctx, playerColors); } });
+
+    // utilities
+    function $$(sel,root){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+
+    // scoring
+    function computeScore(){ var total=0; shapes.forEach(function(s){ var d=colorDistance(targetColors[s], playerColors[s]); total += d; }); // lower is better. Normalize: max distance ~ 441 (white-black full). We'll compute percent match
+      var max = Math.sqrt(255*255*3) * shapes.length; var match = Math.max(0, 1 - (total/max)); return Math.round(match*1000)/10; }
+
+    document.getElementById('check').addEventListener('click', function(){ var sc = computeScore(); scoreEl.textContent = sc + '%'; // simple feedback
+      // subtle animation: draw border around player canvas colored by score
+      var glow = sc>80? '0 12px 30px rgba(34,197,94,0.25)' : sc>50? '0 12px 30px rgba(234,179,8,0.18)' : '0 12px 30px rgba(239,68,68,0.18)'; playerCanvas.style.boxShadow = glow; setTimeout(function(){ playerCanvas.style.boxShadow=''; },900);
+    });
+
+    document.getElementById('randomize').addEventListener('click', function(){ newTarget(); buildPalette(); });
+
+    // timer
+    var startTime = 0, timerInterval = null;
+    function startTimer(){ startTime = Date.now(); if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(function(){ var s = Math.round((Date.now()-startTime)/1000); timerEl.textContent = s + 's'; }, 500); }
+
+    // init
+    buildPalette(); newTarget();
+
+    // Lightbox: support opening image preview of canvases (not necessary but helpful)
+    function makeCanvasImageOpenable(canvas){ canvas.dataset.action='open-image'; canvas.dataset.img = canvas.toDataURL(); }
+    // update player canvas data when changed
+    function updateCanvasDataUrls(){ targetCanvas.dataset.img = targetCanvas.toDataURL(); playerCanvas.dataset.img = playerCanvas.toDataURL(); }
+    // update after draw
+    var origDrawPoster = drawPoster;
+    drawPoster = function(ctx,cols){ origDrawPoster(ctx,cols); updateCanvasDataUrls(); }
+
+    // open lightbox handler (simple)
+    (function(){ var lb = null; function openImg(src){ if(!src) return; if(!lb){ lb = document.createElement('div'); lb.style.position='fixed'; lb.style.inset='0'; lb.style.display='flex'; lb.style.alignItems='center'; lb.style.justifyContent='center'; lb.style.background='rgba(2,6,23,0.9)'; lb.style.zIndex=9999; lb.style.padding='20px'; lb.addEventListener('click', function(e){ if(e.target===lb) document.body.removeChild(lb); }); } var img = document.createElement('img'); img.src = src; img.style.maxWidth='96%'; img.style.maxHeight='96%'; img.style.borderRadius='8px'; img.style.boxShadow='0 20px 50px rgba(0,0,0,0.6)'; lb.innerHTML=''; lb.appendChild(img); document.body.appendChild(lb); }
+      document.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('[data-action="open-image"]'); if(!b) return; var src = b.dataset.img || b.getAttribute('src'); openImg(src); });
+    })();
+
+  </script>
+</body>
+</html>

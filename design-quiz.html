@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Дизайн хичээлийн шалгалт — Web Quiz</title>
+  <style>
+    :root{--bg:#081124;--card:#071126;--muted:#9fb0c8;--accent:#7c3aed;--good:#16a34a;--bad:#ef4444}
+    body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#051025,#071126);color:#e6eef8}
+    .wrap{max-width:920px;margin:28px auto;padding:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:18px;border-radius:12px}
+    h1{margin:0 0 8px;font-size:20px}
+    .meta{color:var(--muted);font-size:13px;margin-bottom:12px}
+    .question{margin:12px 0;padding:12px;border-radius:10px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
+    .q-text{font-weight:600}
+    .choices{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+    label.choice{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);cursor:pointer;background:transparent}
+    input[type=radio]{width:18px;height:18px}
+    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+    .btn{background:linear-gradient(90deg,var(--accent),#ec4899);border:0;padding:10px 12px;border-radius:999px;color:white;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    .result{margin-top:12px;padding:12px;border-radius:8px}
+    .explain{margin-top:8px;color:#cfe6ff;background:rgba(12,22,40,0.4);padding:10px;border-radius:6px}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;color:var(--muted)}
+    .download{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+    .score-badge{font-weight:700;padding:6px 10px;border-radius:8px}
+    .good{background:rgba(34,197,94,0.12);color:var(--good)}
+    .avg{background:rgba(234,179,8,0.09);color:#d97706}
+    .bad{background:rgba(239,68,68,0.08);color:var(--bad)}
+    @media (max-width:740px){ .wrap{padding:12px} .card{padding:12px} canvas{width:100%} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Дизайн — Тест (Web Quiz)</h1>
+      <div class="meta">12 асуулт — олон сонголттой. Хариулж дуусгаад "Шалгах" товч дарна уу. Хариултын дараа тайлбар гарна.</div>
+
+      <form id="quizForm"></form>
+
+      <div class="controls">
+        <button id="submitBtn" class="btn" type="button">Шалгах</button>
+        <button id="resetBtn" class="download" type="button">Шинэчлэх</button>
+        <button id="exportBtn" class="download" type="button">JSON-ээр экспорт</button>
+        <div style="flex:1"></div>
+        <div id="scoreWrap" class="score-badge muted">—</div>
+      </div>
+
+      <div id="results" class="result" style="display:none"></div>
+
+      <div class="footer">
+        <div class="muted">Тайлбар: зөв бүрт 1 оноо. Сайжруулах хэсгийг тайлбар болгон харуулна.</div>
+        <div class="muted">© Дизайн микро-модуль</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Graphic-design-focused questions (Mongolian). Each has choices, correct index and an explanation.
+    var questions = [
+      { q: '1. CMYK ба RGB хоёрын аль нь хэвлэлд (print) илүү тохиромжтой вэ?', choices: ['RGB','CMYK','HSB'], correct: 1,
+        explain: 'CMYK (Cyan, Magenta, Yellow, Key/Black) нь хэвлэлийн өнгөнд зориулагдсан. RGB нь дэлгэцэнд илүү тохиромжтой.' },
+      { q: '2. Контраст гэж дизайнд яагаад чухал вэ?', choices: ['Өнгө хязгаарлахын тулд','Текст ба элементүүдийг уншигдахаар болгох','Файлын хэмжээ багасгахын тулд'], correct: 1,
+        explain: 'Контраст нь текст, товч болон бусад элементийг илэрхий болгох, хандалтын боломжыг сайжруулахад хэрэглэгдэнэ.' },
+      { q: '3. Vector ба Raster (bitmap) зургийн гол ялгаа юу вэ?', choices: ['Vector нь пиксел дээр тулгуурлана','Raster нь масштаблахаас чанар алдагдана, vector нь ширхэггүй масштабладаг','Хоёр нь адилхан'], correct: 1,
+        explain: 'Raster/bitmap нь пиксел суурьтай тул масштаблахад чанар алдагддаг; vector нь математик хэлбэр дээр тулгуурлана, масштаблахад чанар алдагдахгүй.' },
+      { q: '4. Типографид "leading" гэж юуг хэлдэг вэ?', choices: ['Фонтын төрөл','Мөр хоорондын зай (line-height)','Текстийн өнгө'], correct: 1,
+        explain: 'Leading буюу line-height нь мөр хоорондын зайг заадаг ба уншихад нөлөөлдөг.' },
+      { q: '5. Moodboard гэж юу вэ?', choices: ['Төслийн санаа, өнгө, текстурын жишээнүүдийн цуглуулга','Фонт хадгалах формат','Зөвхөн лого хадгалах файл'], correct: 0,
+        explain: 'Moodboard нь төсөлд санаа өгөх зорилгоор өнгө, текстур, хэв маягийн жишээнүүдийг цуглуулсан хавтас юм.' },
+      { q: '6. Golden ratio-г дизайндаа хэрэглэснээр юуг сайжруулж болох вэ?', choices: ['Файлын хурдыг','Композици ба пропорцын төгс харьцааг','Өнгөний контраст'], correct: 1,
+        explain: 'Golden ratio нь композици, пропорцод ашиглагдаж элементүүдийн байрлал, хэмжээний харьцааг тааруулдаг.' },
+      { q: '7. Вектор графикийн өөрт хамгийн тохирох файл форматын сонгох бол?', choices: ['SVG','JPG','PNG'], correct: 0,
+        explain: 'SVG нь вектор формат бөгөөд вэб болон масштабтай графикт тохиромжтой; JPG/PNG нь растер формат.' },
+      { q: '8. Хэвлэхэд ерөнхийлөн ашиглагддаг dpi (resolution) хэмжээ ямар вэ?', choices: ['72 dpi','150 dpi','300 dpi'], correct: 2,
+        explain: 'Олон хэвлэлийн ажилд 300 DPI нь стандарт бөгөөд сайн чанартай хэвлэхэд хэрэгтэй.' },
+      { q: '9. Gestalt зарчмуудын "proximity" нь юу илтгэнэ вэ?', choices: ['Өнгөний адил байдал','Элементүүд ойр байх нь бүлэг мэт харагдуулна','Мөрийн урт'], correct: 1,
+        explain: 'Proximity нь элементүүдийн ойр зай нь тэдгээрийг бүлэг мэт хэрхэн харагдуулахыг заадаг.' },
+      { q: '10. HSL/HSV загвар нь ямар мэдээллийг тус тус харуулдаг вэ?', choices: ['Hue, Saturation, Lightness/Value','Cyan, Magenta, Yellow','Red, Green, Blue'], correct: 0,
+        explain: 'HSL болон HSV нь өнгийн өнгө (hue), нягтрал/с saturation болон гэрэл/үнэлгээ (lightness/value) мэдээллийг агуулна.' },
+      { q: '11. Вэб дизайндаа түгээмэл ашиглагддаг grid багануудын тоо нь ихэвчлэн хэд вэ?', choices: ['8','12','20'], correct: 1,
+        explain: '12 багана нь вэб дизайнд түгээмэл ашиглагддаг бөгөөд уян хатан зохион байгуулалт өгдөг.' },
+      { q: '12. Kerning гэж түвшинд юу заадаг вэ?', choices: ['Нэг үсгээс нөгөө үсэг рүүхи зайг (letter-pair spacing)','Мөр хоорондын зайг','Фонтын хэмжээг'], correct: 0,
+        explain: 'Kerning нь хоёр үсгийн хоорондох зайг тохируулдаг бөгөөд текстийн харагдах байдлыг сайжруулна.' }
+    ];
+
+    var form = document.getElementById('quizForm');
+    function renderQuiz(){ form.innerHTML = '';
+      questions.forEach(function(item, idx){
+        var q = document.createElement('section'); q.className='question';
+        var qt = document.createElement('div'); qt.className='q-text'; qt.textContent = item.q; q.appendChild(qt);
+        var choices = document.createElement('div'); choices.className='choices';
+        item.choices.forEach(function(c, ci){
+          var id = 'q'+idx+'c'+ci;
+          var lab = document.createElement('label'); lab.className='choice'; lab.htmlFor = id;
+          var inp = document.createElement('input'); inp.type='radio'; inp.name='q'+idx; inp.id=id; inp.value=ci;
+          lab.appendChild(inp);
+          var span = document.createElement('span'); span.textContent = c; lab.appendChild(span);
+          choices.appendChild(lab);
+        });
+        q.appendChild(choices);
+        // placeholder for explanation after grading
+        var expl = document.createElement('div'); expl.className='explain'; expl.style.display='none'; expl.id='explain-'+idx; q.appendChild(expl);
+        form.appendChild(q);
+      });
+    }
+
+    function grade(){
+      var correct = 0; var total = questions.length; var resultsEl = document.getElementById('results'); resultsEl.innerHTML = '';
+      questions.forEach(function(item, idx){
+        var sel = form.querySelector('input[name="q'+idx+'"]:checked'); var chosen = sel? +sel.value : null;
+        var expl = document.getElementById('explain-'+idx);
+        if(chosen === item.correct){ correct++; expl.innerHTML = '<strong style="color:var(--good)">Зөв</strong><div style="margin-top:6px">'+item.explain+'</div>'; }
+        else { expl.innerHTML = '<strong style="color:var(--bad)">Буруу</strong><div style="margin-top:6px">Зөв хариулт: <em>'+ item.choices[item.correct] +'</em></div><div style="margin-top:6px">'+item.explain+'</div>'; }
+        expl.style.display = 'block';
+      });
+      // show score
+      var scoreWrap = document.getElementById('scoreWrap'); var pct = Math.round((correct/total)*100);
+      scoreWrap.textContent = correct + '/' + total + ' — ' + pct + '%';
+      scoreWrap.className = 'score-badge ' + (pct>=80? 'good' : pct>=50? 'avg' : 'bad');
+      var resultsHtml = '<div style="font-weight:700;">Таны оноо: '+correct+'/'+total+' ('+pct+'%)</div>';
+      resultsHtml += '<div style="margin-top:8px;color:var(--muted)">Тайлбарууд асуултууд бүрт доор харуулагдлаа.</div>';
+      resultsEl.innerHTML = resultsHtml; resultsEl.style.display='block';
+      // scroll to results
+      resultsEl.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', function(){ grade(); });
+    document.getElementById('resetBtn').addEventListener('click', function(){ renderQuiz(); document.getElementById('results').style.display='none'; document.getElementById('scoreWrap').textContent='—'; var expls = document.querySelectorAll('.explain'); expls.forEach(function(e){e.style.display='none';}); window.scrollTo({top:0,behavior:'smooth'}); });
+
+    document.getElementById('exportBtn').addEventListener('click', function(){ var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(questions,null,2)); var a = document.createElement('a'); a.setAttribute('href', dataStr); a.setAttribute('download', 'design-quiz-questions.json'); document.body.appendChild(a); a.click(); document.body.removeChild(a); });
+
+    // initial render
+    renderQuiz();
+  </script>
+</body>
+</html>

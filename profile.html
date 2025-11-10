@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NeonCanvas · Profile — Compat</title>
+  <style>
+    :root{
+      --bg:#0b0f19; --panel:#071126; --panel-2:#081026; --border:#1f2937;
+      --ink:#dbeafe; --muted:#94a3b8; --chip:#0b1220;
+      --accent-a:#7c3aed; --accent-b:#ec4899; --accent-c:#06b6d4;
+      --like:#60a5fa; --love:#fb7185; --wow:#fbbf24; --fire:#fb923c; --clap:#34d399;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#e5e7eb;background:var(--bg)}
+    .bg-layer{position:fixed; inset:0; z-index:-1; background:var(--bg)} .bg-layer.has-image{background-size:cover;background-position:center;background-repeat:no-repeat}
+    .topbar{max-width:1120px;margin:0 auto;padding:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#7c3aed,#ec4899);box-shadow:0 20px 40px rgba(236,72,153,.25);font-weight:700}
+    .nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:12px}
+    .tabs{display:flex;gap:8px;background:#0f1724;border-radius:999px;padding:6px}
+    .tab{background:transparent;border:0;color:#cbd5e1;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;transition:.2s transform;text-decoration:none}
+    .tab:hover{transform:scale(1.05)} .tab.is-active{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:#fff;box-shadow:0 8px 24px rgba(124,58,237,.35)}
+    .nav-rt{display:flex;align-items:center;gap:10px} .ghost-btn{background:linear-gradient(135deg,#3b82f6,#7c3aed);border:0;padding:8px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+    .me-chip{background:var(--chip);padding:8px 12px;border-radius:999px;font-size:13px}
+    .wrap{max-width:1120px;margin:8px auto 24px;display:grid;grid-template-columns:1fr .9fr;gap:24px}
+    .card{background:rgba(7,17,38,.75);border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.2)}
+    .profile-head{display:flex;gap:16px;align-items:center}
+    .pf-avatar{width:96px;height:96px;border-radius:999px;background:#111827;display:flex;align-items:center;justify-content:center;font-size:26px;overflow:hidden}
+    .pf-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .pf-name{font-size:22px;margin:0} .pf-bio{margin:6px 0 0;color:#cbd5e1;font-size:14px}
+    .pf-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .btn{border:0;border-radius:999px;padding:10px 14px;color:#fff;cursor:pointer}
+    .btn.gradient{background:linear-gradient(90deg,var(--accent-c),var(--accent-a))}
+    .btn.pink{background:linear-gradient(90deg,var(--accent-a),var(--accent-b))}
+    .btn.ghost{background:#0b1220;border:1px solid #172033}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .stat{background:#0b1220;border:1px solid #172033;border-radius:12px;padding:12px}
+    .stat .v{font-size:20px;font-weight:700} .stat .k{font-size:12px;color:#9aa6b2}
+    .field{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+    .field label{font-size:12px;color:#9aa6b2}
+    .field input,.field textarea{background:#0b1220;border:1px solid #172033;border-radius:10px;color:#fff;padding:10px;font-size:14px;outline:none}
+    .field textarea{min-height:80px;resize:vertical}
+    .feed{display:flex;flex-direction:column;gap:14px}
+    .post{background:rgba(7,17,38,.7);border:1px solid var(--border);border-radius:16px;padding:16px}
+    .post-title{margin:0 0 6px;font-weight:700} .post-desc{margin:0 0 10px;color:#cbd5e1}
+    .post-img{border-radius:10px;overflow:hidden;border:1px solid #1f2937;display:flex;justify-content:center;margin-top:10px}
+    .post-img img{display:block;max-width:100%;height:auto}
+    .react-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .react-btn{background:#0b1220;border:1px solid #172033;border-radius:999px;padding:6px 10px;font-size:13px;color:#e5e7eb;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+    .react-emoji{font-size:16px}.react-count{font-size:12px;padding:2px 6px;border-radius:999px;background:rgba(148,163,184,.12);color:#cbd5e1}
+    .notifs{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:8px}.notif{background:#06101a;padding:8px;border-radius:8px;color:#cbd5e1;font-size:14px}
+    @media (max-width: 900px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="bg-layer" class="bg-layer"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">NC</div>
+      <div>
+        <h1>NeonCanvas</h1>
+        <p style="margin:4px 0 0;color:#94a3b8;font-size:12px">Profile</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="tabs">
+        <a href="index.html" class="tab">Home</a>
+        <a href="#" class="tab is-active">Profile</a>
+      </div>
+      <div class="nav-rt">
+        <label class="ghost-btn" title="Set background image (upload)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#fff" viewBox="0 0 24 24"><path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v10zM8 13l2.5 3 3.5-4.5L18 17H6l2-4z"/></svg>
+          <span>BG</span><input id="bg-file" type="file" accept="image/*" hidden />
+        </label>
+        <button id="bg-reset" class="ghost-btn" title="Reset BG">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#fff" viewBox="0 0 24 24"><path d="M12 6V3L8 7l4 4V8c2.757 0 5 2.243 5 5a5 5 0 0 1-9.584 2.001l-1.832.804A7 7 0 1 0 12 6z"/></svg>
+          <span>Reset</span>
+        </button>
+        <button id="logout-btn" class="ghost-btn" title="Logout">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#fff" viewBox="0 0 20 20">
+            <path d="M2 5a2 2 0 012-2h8a2 2 0 012 2v4h-2V5H4v10h6v-3h2v3a2 2 0 01-2 2H4a2 2 0 01-2-2V5z"/>
+            <path d="M14 9l4 4m0 0l-4 4m4-4H9"/>
+          </svg>
+        </button>
+        <div class="me-chip" id="me-chip">User</div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="profile-head">
+        <div class="pf-avatar" id="pf-avatar">ED</div>
+        <div>
+          <h2 class="pf-name" id="pf-name">User Name</h2>
+          <div id="pf-rank" style="margin-top:4px"></div>
+          <p class="pf-bio" id="pf-bio">—</p>
+          <div class="pf-actions">
+            <label class="btn ghost">Update avatar <input id="avatar-file" type="file" accept="image/*" hidden /></label>
+            <button id="avatar-clear" class="btn ghost">Clear avatar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:14px">
+        <div class="stat"><div class="v" id="st-points">0</div><div class="k">Total points</div></div>
+        <div class="stat"><div class="v" id="st-posts">0</div><div class="k">Posts</div></div>
+      </div>
+
+      <div class="field"><label for="in-name">Display name</label><input id="in-name" placeholder="Your name" /></div>
+      <div class="field"><label for="in-avatar-text">Avatar initials (optional)</label><input id="in-avatar-text" placeholder="e.g. ED" /></div>
+      <div class="field"><label for="in-bio">Bio</label><textarea id="in-bio" placeholder="Say something about you..."></textarea></div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button id="save-profile" class="btn gradient">Save profile</button>
+        <a href="index.html" class="btn pink" style="text-decoration:none;display:inline-block">Back to Home</a>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h3 style="margin-top:0">My posts</h3>
+      <div id="my-feed" class="feed" style="margin-top:10px"></div>
+
+      <h3 style="margin-top:16px">Notifications</h3>
+      <div id="notifications" class="notifs" style="margin-top:8px"></div>
+    </aside>
+  </main>
+
+  <script>
+    var LOCAL_KEYS = { POSTS:"neon_posts_v1", NOTIFS:"neon_notifs_v1", CONTESTS:"neon_contests_v1", BG:"neon_bg_v1", ME:"neon_me_v1", AUTH:"neon_auth_v1", LESSONS:"neon_lessons_v1", LPOINTS:"neon_lpoints_v1" };
+    var REACTION_POINTS = { like:1, love:2, wow:1.5, fire:2.5, clap:1 };
+    var REACTION_EMOJI  = { like:"👍", love:"❤️", wow:"😮", fire:"🔥", clap:"👏" };
+    var RANKS = [
+      { name:"Novice Spark", icon:"✨", min:0,   color:"#7f8cff" },
+      { name:"Glyph Crafter", icon:"🔮", min:20,  color:"#b57bff" },
+      { name:"Aether Painter", icon:"🌌", min:60,  color:"#d96bff" },
+      { name:"Illusion Shaper", icon:"🌀", min:120, color:"#ff72d2" },
+      { name:"Astral Designer", icon:"💫", min:200, color:"#ff56b8" },
+      { name:"Ethereal Master", icon:"🌠", min:350, color:"#ff3ca6" },
+      { name:"Lumen Archmage", icon:"🔥✨", min:550, color:"#ff2d95" }
+    ];
+    function $(s,root){return (root||document).querySelector(s)}
+    function esc(s){ s = (s==null? "": String(s)); return s.replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+    function calcPostPoints(p){ var pts=0; var r; for(r in (p.reactions||{})){ if(Object.prototype.hasOwnProperty.call(p.reactions,r)){ var c=p.reactions[r]; var k=(REACTION_POINTS[r]!==undefined && REACTION_POINTS[r]!==null)? REACTION_POINTS[r] : 1; pts+=k*c; } } return Math.round(pts*10)/10; }
+    function getRank(points){ var cur=RANKS[0]; for(var i=0;i<RANKS.length;i++){ if(points>=RANKS[i].min) cur=RANKS[i]; } return cur; }
+
+    var bus=null; try{ bus=new BroadcastChannel('neon_sync'); }catch(e){ bus=null; }
+    function broadcast(type,payload){ if(bus){ try{ bus.postMessage({type:type,payload:payload}); }catch(e){} } }
+    function isAuthed(){ try{ var a=JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); return !!(a && a.loggedIn); }catch(e){ return false; } }
+    function ensureAuthOrRedirect(){ if(!isAuthed()){ window.location.href='login.html'; return false; } return true; }
+    function logout(){ try{ localStorage.setItem(LOCAL_KEYS.AUTH, JSON.stringify({loggedIn:false})); }catch(e){} broadcast('AUTH_CHANGED',{loggedIn:false}); window.location.href='login.html'; }
+
+    var me = { id:3, name:"Enkhtuya D.", avatar:"ED", bio:"", avatarImage:null };
+    var state = { posts:[], notifications:[], myPosts:[], myPoints:0 };
+
+    function applyBackground(url,opts){ opts=opts||{}; var persist=(opts.persist!==false); var layer=$("#bg-layer"); if(layer){ layer.style.backgroundImage='linear-gradient(0deg, rgba(5,10,20,.55), rgba(5,10,20,.66)), url("'+url+'")'; layer.classList.add("has-image"); } if(persist){ try{ localStorage.setItem(LOCAL_KEYS.BG, JSON.stringify({dataUrl:url})); }catch(e){} } }
+    function resetBackground(){ var layer=$("#bg-layer"); if(layer){ layer.style.backgroundImage=""; layer.classList.remove("has-image"); } try{ localStorage.removeItem(LOCAL_KEYS.BG); }catch(e){} }
+
+    function getUserById(id){ if(id===me.id) return { id: me.id, name: me.name, avatar: me.avatar, avatarImage: me.avatarImage }; return { id:id, name:"User", avatar:"U" }; }
+
+    function loadAll(){
+      try{ var m=JSON.parse(localStorage.getItem(LOCAL_KEYS.ME)||"null"); if(m && m.id){ for(var k in m){ if(Object.prototype.hasOwnProperty.call(m,k)) me[k]=m[k]; } } }catch(e){}
+      var chip=$("#me-chip"); if(chip) chip.textContent = me.name || "User";
+      var av=$("#pf-avatar"); if(me.avatarImage){ av.innerHTML='<img src="'+me.avatarImage+'" alt="avatar">'; } else { av.textContent = me.avatar || (me.name? me.name.split(' ').map(function(s){return s[0]}).join('').slice(0,2).toUpperCase() : "U"); }
+      $("#pf-name").textContent = me.name || "User Name"; $("#pf-bio").textContent = me.bio || "—"; $("#in-name").value = me.name || ""; $("#in-avatar-text").value = me.avatar || ""; $("#in-bio").value = me.bio || "";
+      try{ var bg=JSON.parse(localStorage.getItem(LOCAL_KEYS.BG)||"null"); if(bg && bg.dataUrl) applyBackground(bg.dataUrl,{persist:false}); }catch(e){}
+      try{ var p=JSON.parse(localStorage.getItem(LOCAL_KEYS.POSTS)||"null"); state.posts = Array.isArray(p)? p : []; }catch(e){ state.posts=[]; }
+      try{ var n=JSON.parse(localStorage.getItem(LOCAL_KEYS.NOTIFS)||"null"); state.notifications = Array.isArray(n)? n : []; }catch(e){ state.notifications=[]; }
+      state.myPosts = state.posts.filter(function(p){return p.userId===me.id});
+      state.myPoints = state.posts.reduce(function(a,p){ return a+(p.userId===me.id?calcPostPoints(p):0); }, 0);
+      var r=getRank(state.myPoints); $("#pf-rank").innerHTML = '<div style="display:inline-flex;gap:8px;align-items:center"><span>'+r.icon+'</span><span>'+esc(r.name)+'</span></div>';
+      $("#st-points").textContent = Math.round((state.myPoints+Number.EPSILON)*10)/10; $("#st-posts").textContent = state.myPosts.length;
+      renderMyFeed(); renderNotifs();
+    }
+    function renderMyFeed(){
+      var el=$("#my-feed"); if(!state.myPosts.length){ el.innerHTML='<div class="post" style="opacity:.8">No posts yet.</div>'; return; }
+      el.innerHTML = state.myPosts.map(function(post){
+        var wh = post.imageMeta ? ' width="'+post.imageMeta.width+'" height="'+post.imageMeta.height+'"' : '';
+        return '<article class="post" data-post="'+post.id+'"><h4 class="post-title">'+esc(post.title)+'</h4><p class="post-desc">'+esc(post.description||"")+'</p>'+
+          (post.image? '<div class="post-img"><img alt="'+esc(post.title)+'" src="'+post.image+'"'+wh+' loading="lazy" decoding="async" /></div>' : '')+
+          '<div class="react-row">'+
+            Object.keys(REACTION_POINTS).map(function(r){ var cnt=(post.reactions&&post.reactions[r])?post.reactions[r]:0; var icon=REACTION_EMOJI[r]||"✨"; return '<button class="react-btn" data-action="react" data-reaction="'+r+'" data-post="'+post.id+'"><span class="react-emoji">'+icon+'</span><span class="react-count">'+cnt+'</span></button>'; }).join("")+
+          '</div></article>';
+      }).join("");
+    }
+    function renderNotifs(){ var box=$("#notifications"); if(!state.notifications.length){ box.innerHTML='<div class="notif">No notifications yet</div>'; return; } box.innerHTML=state.notifications.map(function(n){ return '<div class="notif">'+esc(n.text)+'</div>'; }).join(""); }
+    function saveProfile(){
+      var name=($("#in-name").value||"").trim(); var atext=($("#in-avatar-text").value||"").trim(); var bio=($("#in-bio").value||"").trim();
+      me=Object.assign({}, me, { name: name||me.name, avatar: atext||me.avatar, bio: bio });
+      try{ localStorage.setItem(LOCAL_KEYS.ME, JSON.stringify(me)); }catch(e){}
+      $("#me-chip").textContent = me.name || "User"; $("#pf-name").textContent = me.name || "User Name"; $("#pf-bio").textContent = me.bio || "—";
+      var av=$("#pf-avatar"); if(me.avatarImage){ av.innerHTML='<img src="'+me.avatarImage+'" alt="avatar">'; } else { av.textContent = me.avatar || (me.name? me.name.split(' ').map(function(s){return s[0]}).join('').slice(0,2).toUpperCase() : "U"); }
+      pushNotif("Profile saved ✔"); if(bus){ try{ bus.postMessage({type:'ME_UPDATED', payload: me}); }catch(e){} }
+    }
+    function pushNotif(text){
+      try{ var list=JSON.parse(localStorage.getItem(LOCAL_KEYS.NOTIFS)||"[]"); list.unshift({id:Date.now()+Math.random(), text:text, time:Date.now()}); localStorage.setItem(LOCAL_KEYS.NOTIFS, JSON.stringify(list)); }catch(e){}
+      state.notifications.unshift({ id:Date.now()+Math.random(), text:text, time:Date.now() }); renderNotifs();
+    }
+    function handleReact(postId,reaction){
+      try{
+        var posts=JSON.parse(localStorage.getItem(LOCAL_KEYS.POSTS)||"[]"); var idx=-1; for(var i=0;i<posts.length;i++){ if(posts[i].id===postId){ idx=i; break; } }
+        if(idx<0) return;
+        var p=posts[idx]; var r=Object.assign({}, (p.reactions||{})); r[reaction]=(r[reaction]||0)+1; posts[idx]=Object.assign({}, p, {reactions:r}); localStorage.setItem(LOCAL_KEYS.POSTS, JSON.stringify(posts));
+        state.posts=posts; state.myPosts=posts.filter(function(pp){return pp.userId===me.id}); state.myPoints=posts.reduce(function(a,pp){return a+(pp.userId===me.id?calcPostPoints(pp):0)},0);
+        renderMyFeed(); $("#st-points").textContent=Math.round((state.myPoints+Number.EPSILON)*10)/10; var rk=getRank(state.myPoints); $("#pf-rank").innerHTML='<div style="display:inline-flex;gap:8px;align-items:center"><span>'+rk.icon+'</span><span>'+esc(rk.name)+'</span></div>';
+        if(bus){ try{ bus.postMessage({type:'POSTS_UPDATED', payload: null}); }catch(e){} }
+      }catch(e){}
+    }
+
+    function setupSync(){
+      if(bus){
+        bus.onmessage=function(ev){
+          var d=ev.data||{}; var type=d.type, payload=d.payload;
+          if(type==='AUTH_CHANGED' && !(payload && payload.loggedIn)){ window.location.href='login.html'; }
+          else if(type==='BG_UPDATED'){ var u=payload && payload.dataUrl; if(u) applyBackground(u,{persist:false}); else resetBackground(); }
+          else if(type==='ME_UPDATED'){ try{ var m=JSON.parse(localStorage.getItem(LOCAL_KEYS.ME)||"null"); if(m&&m.id){ for(var k in m){ if(Object.prototype.hasOwnProperty.call(m,k)) me[k]=m[k]; } var chip=$("#me-chip"); if(chip) chip.textContent=me.name||"User"; } }catch(e){} }
+          else if(type==='POSTS_UPDATED'){ try{ var p=JSON.parse(localStorage.getItem(LOCAL_KEYS.POSTS)||"null"); if(Array.isArray(p)){ state.posts=p; state.myPosts=p.filter(function(pp){return pp.userId===me.id}); renderMyFeed(); } }catch(e){} }
+        };
+      }
+      window.addEventListener('storage', function(e){
+        if(e.key===LOCAL_KEYS.AUTH){ try{ var a=JSON.parse(e.newValue||"null"); if(!(a && a.loggedIn)) window.location.href='login.html'; }catch(err){ window.location.href='login.html'; } }
+      });
+    }
+
+    function wire(){
+      if(!ensureAuthOrRedirect()) return;
+      var bgF=document.getElementById("bg-file"); if(bgF){ bgF.addEventListener("change", function(e){ var f=e.target.files && e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(){ applyBackground(reader.result,{persist:true}); if(bus){ try{ bus.postMessage({type:'BG_UPDATED',payload:{dataUrl:reader.result}}); }catch(e){} } }; reader.readAsDataURL(f); }); }
+      var bgR=document.getElementById("bg-reset"); if(bgR){ bgR.addEventListener("click", function(){ resetBackground(); if(bus){ try{ bus.postMessage({type:'BG_UPDATED',payload:{dataUrl:null}}); }catch(e){} } }); }
+      var avF=document.getElementById("avatar-file"); if(avF){ avF.addEventListener("change", function(e){ var f=e.target.files && e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(){ me.avatarImage=reader.result; try{ localStorage.setItem(LOCAL_KEYS.ME, JSON.stringify(me)); }catch(e){}; var el=document.getElementById("pf-avatar"); if(el) el.innerHTML='<img src="'+me.avatarImage+'" alt="avatar">'; pushNotif("Avatar updated ✔"); if(bus){ try{ bus.postMessage({type:'ME_UPDATED',payload:me}); }catch(e){} } }; reader.readAsDataURL(f); }); }
+      var avC=document.getElementById("avatar-clear"); if(avC){ avC.addEventListener("click", function(){ me.avatarImage=null; try{ localStorage.setItem(LOCAL_KEYS.ME, JSON.stringify(me)); }catch(e){}; var av=document.getElementById("pf-avatar"); if(av) av.textContent= me.avatar || (me.name? me.name.split(' ').map(function(s){return s[0]}).join('').slice(0,2).toUpperCase() : "U"); pushNotif("Avatar cleared"); if(bus){ try{ bus.postMessage({type:'ME_UPDATED',payload:me}); }catch(e){} } }); }
+      var sBtn=document.getElementById("save-profile"); if(sBtn) sBtn.addEventListener("click", saveProfile);
+      var myFeed=document.getElementById("my-feed"); if(myFeed){ myFeed.addEventListener("click", function(e){ var btn=e.target.closest && e.target.closest("[data-action='react']"); if(!btn) return; handleReact(+btn.dataset.post, btn.dataset.reaction); }); }
+      var lo=document.getElementById("logout-btn"); if(lo){ lo.addEventListener("click", logout); }
+    }
+
+    (function boot(){ if(!ensureAuthOrRedirect()) return; loadAll(); wire(); setupSync(); })();
+  </script>
+</body>
+</html>

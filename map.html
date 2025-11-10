@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Map · Leaderboard positions</title>
+  <style>
+    :root{ --bg:#071126; --panel:#0b1220; --muted:#94a3b8; --accent:#7c3aed; }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#e5e7eb}
+    .wrap{max-width:1100px;margin:18px auto;padding:18px}
+    h1{margin:0 0 8px;font-size:18px}
+    .content{display:flex;gap:16px}
+    .map-wrap{position:relative;flex:1;height:640px;border-radius:12px;overflow:hidden;background:#000}
+    .map-img{width:100%;height:100%;object-fit:cover;display:block}
+    .marker{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer}
+    .marker .dot{width:20px;height:20px;background:linear-gradient(90deg,var(--accent),#06b6d4);border-radius:50%;box-shadow:0 8px 20px rgba(124,58,237,.18);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+    .marker .label{margin-top:6px;background:rgba(2,6,23,.8);padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);font-size:13px;white-space:nowrap}
+    .panel{width:320px;background:var(--panel);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03)}
+    .leader{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto}
+    .leader-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.02));cursor:pointer}
+    .leader-item:hover{box-shadow:0 8px 24px rgba(0,0,0,.45)}
+    .muted{color:var(--muted);font-size:13px}
+    .empty{color:var(--muted);padding:12px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .btn{background:linear-gradient(90deg,#06b6d4,#7c3aed);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .small{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Map · Leaderboard positions</h1>
+    <p class="small">Markers are placed by leaderboard rank (top → positions). Data read from localStorage keys: <code>neon_users_v1</code>, <code>neon_lpoints_v1</code>, <code>neon_posts_v1</code>.</p>
+
+    <div class="content">
+      <div class="map-wrap" id="map-wrap">
+        <img src="map.jpg" alt="map" class="map-img" id="map-img" />
+      </div>
+
+      <div class="panel">
+        <div class="controls">
+          <button id="refresh" class="btn">Refresh</button>
+          <button id="centerTop" class="btn">Center top</button>
+          <label style="display:flex;align-items:center;gap:8px;margin-left:6px">
+            <input id="map-file" type="file" accept="image/*" style="display:none" />
+            <button id="chooseFile" class="btn" title="Choose a local image">Choose image</button>
+          </label>
+        </div>
+        <div id="leader" class="leader"></div>
+        <div id="note" class="empty"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // positions: array of percentage coords (left, top) for rank 1..12
+    var POSITIONS = [
+      {x:48, y:22}, {x:62, y:28}, {x:32, y:30}, {x:72, y:44}, {x:52, y:46}, {x:40, y:54},
+      {x:22, y:60}, {x:78, y:62}, {x:86, y:50}, {x:66, y:68}, {x:28, y:44}, {x:14, y:34}
+    ];
+
+    function $(s){return document.querySelector(s)}
+    function esc(s){ return String(s||'').replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]}); }
+
+    // Reaction points mapping (matches app)
+    var REACTION_POINTS = { like:1, love:2, wow:1.5, fire:2.5, clap:1 };
+
+    function loadUsers(){
+      try{ return JSON.parse(localStorage.getItem('neon_users_v1')||'null') || []; }catch(e){ return []; }
+    }
+    function loadLPoints(){ try{ return JSON.parse(localStorage.getItem('neon_lpoints_v1')||'null') || {}; }catch(e){ return {}; } }
+    function loadPosts(){ try{ return JSON.parse(localStorage.getItem('neon_posts_v1')||'null') || []; }catch(e){ return []; } }
+
+    function pointsFromPosts(posts){
+      var map = {};
+      posts.forEach(function(p){ var uid = p.userId; var reactions = p.reactions || {}; var pts = 0; for(var r in reactions){ if(Object.prototype.hasOwnProperty.call(reactions,r)){ pts += (REACTION_POINTS[r] || 1) * (reactions[r]||0); } } map[uid] = (map[uid]||0) + Math.round(pts*10)/10; });
+      return map;
+    }
+
+    function computeLeaderboard(){
+      var users = loadUsers();
+      var lpoints = loadLPoints();
+      var posts = loadPosts();
+      var postPoints = pointsFromPosts(posts);
+      // if users is empty, fallback sample from posts authors
+      var ids = users.map(function(u){return u.id});
+      posts.forEach(function(p){ if(ids.indexOf(p.userId) === -1) ids.push(p.userId); });
+
+      var rows = ids.map(function(id){
+        var u = users.filter(function(x){return x.id===id;})[0] || { id:id, name: 'User '+id, avatar: (''+id).slice(-2) };
+        var ptsL = +(lpoints[id] || 0);
+        var ptsP = +(postPoints[id] || 0);
+        var total = ptsL + ptsP;
+        return { id: id, name: u.name||('User '+id), avatar: u.avatar||'', points: total };
+      });
+      // sort desc
+      rows.sort(function(a,b){ return (b.points - a.points) || String(a.name).localeCompare(b.name); });
+      return rows;
+    }
+
+    function clearMarkers(){ var wrap = $('#map-wrap'); wrap.querySelectorAll('.marker').forEach(function(n){ n.remove(); }); }
+
+    function renderMap(){
+      var leader = computeLeaderboard();
+      var wrap = $('#map-wrap'); clearMarkers();
+      var list = $('#leader'); list.innerHTML = '';
+      if(!leader.length){ $('#note').textContent = 'No leaderboard data found in localStorage.'; return; } else { $('#note').textContent = ''; }
+
+      var topN = Math.min( Math.min(POSITIONS.length, 12), leader.length );
+      for(var i=0;i<topN;i++){
+        var u = leader[i];
+        var pos = POSITIONS[i] || {x:10 + i*6, y:10 + i*5};
+        // add marker
+        var m = document.createElement('div'); m.className='marker'; m.dataset.userId = u.id; m.style.left = pos.x + '%'; m.style.top = pos.y + '%';
+        m.innerHTML = '<div class="dot">'+(i+1)+'</div><div class="label">'+esc(u.name)+' · '+u.points+'</div>';
+        (function(mark, user){
+          mark.addEventListener('click', function(){ highlightUser(user.id); });
+        })(m, u);
+        wrap.appendChild(m);
+
+        // add list item
+        var li = document.createElement('div'); li.className='leader-item'; li.dataset.userId = u.id;
+        li.innerHTML = '<div><strong>'+esc((i+1)+'. '+u.name)+'</strong><div class="muted">'+esc(u.avatar||'')+'</div></div><div><strong>'+u.points+'</strong></div>';
+        (function(item, markerEl){ item.addEventListener('click', function(){ centerMarker(markerEl); }); })(li, m);
+        list.appendChild(li);
+      }
+
+      // if there are more users than markers, show remaining on leaderboard
+      if(leader.length > topN){
+        for(var j=topN;j<leader.length && j<50;j++){
+          var u2 = leader[j];
+          var li2 = document.createElement('div'); li2.className='leader-item'; li2.innerHTML = '<div><strong>'+esc((j+1)+'. '+u2.name)+'</strong><div class="muted">'+esc(u2.avatar||'')+'</div></div><div><strong>'+u2.points+'</strong></div>';
+          list.appendChild(li2);
+        }
+      }
+    }
+
+    function highlightUser(id){
+      // simple highlight: pulse label background
+      $('#map-wrap').querySelectorAll('.marker').forEach(function(m){ m.style.zIndex = 1; m.querySelector('.label').style.borderColor = 'rgba(255,255,255,0.04)'; });
+      var el = $('#map-wrap').querySelector('.marker[data-user-id="'+id+'"]');
+      if(el){ el.style.zIndex = 999; el.querySelector('.label').style.borderColor = '#7c3aed'; el.querySelector('.label').style.boxShadow = '0 8px 28px rgba(124,58,237,.28)'; setTimeout(function(){ if(el){ el.querySelector('.label').style.boxShadow=''; } }, 2200); }
+    }
+
+    function centerMarker(el){ if(!el) return; // scroll map-wrap? we can't pan the static img, but we can highlight
+      highlightUser(el.dataset.userId);
+    }
+
+    $('#refresh').addEventListener('click', function(){ renderMap(); });
+    $('#centerTop').addEventListener('click', function(){ // center top: highlight rank 1
+      var first = $('#map-wrap').querySelector('.marker'); if(first) highlightUser(first.dataset.userId); });
+
+    // init
+    // attach a robust fallback and file-chooser if the map image fails to load (missing file or broken path)
+    (function attachMapFallbackAndChooser(){
+      var img = document.getElementById('map-img');
+      var chooseBtn = document.getElementById('chooseFile');
+      var fileInput = document.getElementById('map-file');
+
+      function showFallback(){
+        var wrap = document.getElementById('map-wrap');
+        // add a non-destructive overlay so the <img> element remains available for file selection
+        if(document.getElementById('map-fallback')) return; // already present
+        var overlay = document.createElement('div'); overlay.id = 'map-fallback';
+        overlay.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(7,17,38,0.88),rgba(8,20,40,0.94));color:#94a3b8;padding:18px;z-index:60;border-radius:0';
+        overlay.innerHTML = '\n          <div style="text-align:center;max-width:680px">\n            <svg width="140" height="120" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg">\n              <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>\n              <rect rx="12" width="240" height="200" fill="#020617" opacity="0.6"/>\n              <g transform="translate(20,18)">\n                <path d="M10 80 C 40 10, 80 10, 110 80 S 180 150, 210 80" fill="none" stroke="url(#g)" stroke-width="6" stroke-linecap="round"/>\n                <circle cx="40" cy="60" r="8" fill="#7c3aed"/>\n                <circle cx="120" cy="50" r="10" fill="#06b6d4"/>\n              </g>\n            </svg>\n            <div style="margin-top:12px;font-size:15px;color:#cbd5e1">Map image not found or failed to load.</div>\n            <div style="margin-top:8px;font-size:13px;color:#94a3b8">You can choose a map image from your disk using the <strong>Choose image</strong> button.</div>\n          </div>';
+        wrap.appendChild(overlay);
+        if(img) img.style.opacity = '0';
+      }
+
+      // Try a list of likely paths (relative and absolute) before showing fallback
+      var CANDIDATES = [
+        'map.jpg', 'map.svg', 'map.png',
+        './map.jpg', './map.svg', './map.png',
+        '../map.jpg', '../map.svg', '../map.png',
+        '/Users/baganaa/Downloads/map.jpg', '/Users/baganaa/Downloads/map.svg'
+      ];
+      function tryPaths(paths, onDone, idx){
+        idx = idx || 0;
+        if(idx >= paths.length){ onDone(false); return; }
+        var test = new Image();
+        test.onload = function(){ img.src = paths[idx]; onDone(true); };
+        test.onerror = function(){ tryPaths(paths, onDone, idx+1); };
+        // start loading
+        try{ test.src = paths[idx]; }catch(e){ tryPaths(paths, onDone, idx+1); }
+      }
+
+      // wire choose file flow and persist selected image as a data URL so it survives reloads
+      var MAP_DATA_KEY = 'neon_map_data_v1';
+      chooseBtn.addEventListener('click', function(e){ e.preventDefault(); fileInput.click(); });
+      fileInput.addEventListener('change', function(e){ var f = fileInput.files && fileInput.files[0]; if(!f) return;
+        var reader = new FileReader();
+        reader.onload = function(){ try{
+            var dataUrl = reader.result;
+            // persist to localStorage (be mindful of size)
+            try{ localStorage.setItem(MAP_DATA_KEY, dataUrl); }catch(se){ console.warn('Failed to persist map to localStorage', se); }
+            if(!img){ var wrap = document.getElementById('map-wrap'); img = document.createElement('img'); img.id = 'map-img'; img.className='map-img'; img.alt='map'; wrap.insertBefore(img, wrap.firstChild); }
+            img.src = dataUrl; img.style.opacity = '1'; removeFallback();
+            // once user selects, re-run renderMap after short delay
+            setTimeout(renderMap, 200);
+        }catch(err){ console.error(err); }};
+        reader.readAsDataURL(f);
+      });
+
+      function removeFallback(){ var ov = document.getElementById('map-fallback'); if(ov) ov.remove(); if(img) img.style.opacity='1'; }
+
+      // wire image load/error to remove or show fallback
+      if(img){ img.addEventListener('load', function(){ removeFallback(); }); img.addEventListener('error', function(){ showFallback(); }); }
+
+      // If user previously selected an image, restore it from localStorage first
+      var MAP_DATA_KEY = 'neon_map_data_v1';
+      try{
+        var stored = localStorage.getItem(MAP_DATA_KEY);
+        if(stored){
+          if(!img){ var wrap = document.getElementById('map-wrap'); img = document.createElement('img'); img.id = 'map-img'; img.className='map-img'; img.alt='map'; wrap.insertBefore(img, wrap.firstChild); }
+          img.src = stored; // data URL
+          // wait for load event to remove fallback
+        }
+      }catch(e){ console.warn('map restore failed', e); }
+
+      // perform attempt sequence (only if no stored image is present)
+      if(!img || !img.src || img.src.indexOf('data:') !== 0){
+        tryPaths(CANDIDATES, function(found){ if(!found){ showFallback(); } else { /* image loaded, proceed */ } });
+      }
+
+      // safety timeout: if image not loaded in 400ms, show fallback but still allow choosing file
+      setTimeout(function(){ if(!img || !img.complete || img.naturalWidth === 0){ showFallback(); } }, 400);
+    })();
+
+    renderMap();
+
+    // update when storage changes
+    window.addEventListener('storage', function(e){ if(e.key === 'neon_users_v1' || e.key === 'neon_lpoints_v1' || e.key === 'neon_posts_v1'){ renderMap(); } });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NeonCanvas (Home · Contests · Lessons) — Compat</title>
+  <style>
+    :root{
+      --bg:#0b0f19; --panel:#071126; --panel-2:#081026; --border:#1f2937;
+      --ink:#dbeafe; --muted:#94a3b8; --chip:#0b1220;
+      --accent-a:#7c3aed; --accent-b:#ec4899; --accent-c:#06b6d4;
+      --like:#60a5fa; --love:#fb7185; --wow:#fbbf24; --fire:#fb923c; --clap:#34d399;
+      --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#e5e7eb}
+    .bg-layer{position:fixed; inset:0; z-index:-1; background:var(--bg); background-attachment:fixed; transition:opacity .25s ease, filter .25s ease}
+    .bg-layer.has-image{background-size:cover; background-position:center; background-repeat:no-repeat}
+    .topbar{max-width:1120px;margin:0 auto;padding:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#7c3aed,#ec4899); box-shadow:0 20px 40px rgba(236,72,153,.25); font-weight:700}
+    .brand h1{margin:0;font-size:18px}
+    .nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:12px}
+    .tabs{display:flex;gap:8px;background:#0f1724;border-radius:999px;padding:6px}
+    .tabs .tab{background:transparent;border:0;color:#cbd5e1;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;transition:.2s transform;text-decoration:none;display:inline-block}
+    .tabs .tab:hover{transform:scale(1.05)}
+    .tabs .tab.is-active{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:white;box-shadow:0 8px 24px rgba(124,58,237,.35)}
+    .nav-rt{display:flex;align-items:center;gap:10px}
+    .nav-rt input{display:block;width:260px;background:#0b1220;border:1px solid #172033;border-radius:999px;padding:8px 12px;color:#e2e8f0;font-size:13px}
+    .ghost-btn{background:linear-gradient(135deg,#3b82f6,#7c3aed);border:0;padding:8px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+    .me-chip{background:var(--chip);padding:8px 12px;border-radius:999px;font-size:13px}
+    .layout{max-width:1120px;margin:8px auto 24px;display:grid;grid-template-columns:1.8fr .9fr;gap:24px}
+    .card{background:rgba(7,17,38,.75);border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.2)}
+  .btn{border:1px solid var(--border);border-radius:999px;padding:10px 14px;color:#e5e7eb;cursor:pointer;background:var(--panel-2)}
+    .btn.gradient{background:linear-gradient(90deg,var(--accent-c),var(--accent-a));box-shadow:0 8px 24px rgba(124,58,237,.25)}
+    .btn.pink{background:linear-gradient(90deg,var(--accent-a),var(--accent-b))}
+    .btn.ghost{background:#0b1220;border:1px solid #172033}
+    .btn.full{width:100%}
+    .upload{border:1px dashed #334155;border-radius:999px;padding:8px 12px;font-size:13px;cursor:pointer}
+    .maincol{display:flex;flex-direction:column;align-items:center}
+    .composer,.post,.manager,.lesson-card,.lesson-view{max-width:720px;width:100%;margin-inline:auto}
+    .composer{display:flex;gap:16px;align-items:flex-start;transition:box-shadow .25s ease, outline .2s ease}
+    .composer--focused{outline:1px solid var(--accent-a);box-shadow:0 16px 48px rgba(124,58,237,.28),0 0 0 2px rgba(6,182,212,.15) inset}
+    .avatar{width:48px;height:48px;border-radius:999px;background:#111827;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .input{width:100%;background:transparent;color:#fff;border:0;outline:none}
+    .input.title{border-bottom:1px solid #20304a;padding:8px 0;font-size:16px}
+    .input.desc{margin-top:8px;height:84px;resize:none;font-size:14px}
+    .composer-actions{display:flex;align-items:center;gap:10px;margin-top:10px}
+    .composer-affix{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+    .composer-affix label{font-size:12px;color:#9aa6b2}
+    .composer-affix select{background:#0b1220;border:1px solid #172033;color:#e5e7eb;border-radius:10px;padding:8px 10px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin:16px auto 0;max-width:720px}
+    .chip{background:#0b1220;border:1px solid #172033;color:#cbd5e1;border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer}
+    .chip.is-active{border-color:#7c3aed;box-shadow:0 0 0 1px #7c3aed inset}
+    .feed{margin-top:16px;display:flex;flex-direction:column;gap:14px}
+  /* Leaderboard styles */
+  .leaderboard{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .leaderboard li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.02));border:1px solid rgba(255,255,255,0.03)}
+  .lb-left{display:flex;align-items:center;gap:10px}
+  .lb-avatar{width:44px;height:44px;border-radius:999px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;background:linear-gradient(135deg,#0b1220,#071126);border:1px solid rgba(255,255,255,0.03);font-size:14px}
+  .lb-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .lb-user{display:flex;flex-direction:column}
+  .lb-user .name{font-weight:700;font-size:14px;color:var(--ink)}
+  .lb-user .rank{font-size:12px;color:var(--muted);margin-top:3px}
+  .leader-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .leader-points{background:linear-gradient(90deg,var(--accent-c),var(--accent-a));color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px;box-shadow:0 8px 20px rgba(124,58,237,.12)}
+  .leader-pos{font-size:12px;color:var(--muted);background:transparent}
+  .leaderboard li:hover{transform:translateY(-3px);transition:transform .18s ease}
+    .post{background:rgba(7,17,38,.7);border:1px solid var(--border);border-radius:16px;padding:16px;position:relative}
+    .post-head{display:flex;justify-content:space-between;gap:10px}
+    .post-user{display:flex;gap:10px}
+    .post-user .avatar{width:48px;height:48px;font-size:12px}
+    .post-meta{font-size:12px;color:#9aa6b2}
+    .post-points{font-size:14px;color:#cbd5e1}
+  /* Comments and replies */
+  .comment-list{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .comment-item{background:rgba(11,17,32,0.45);border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px}
+  .comment-head{display:flex;gap:8px;align-items:center}
+  .comment-head .author{font-weight:600;font-size:13px}
+  .comment-head .text{font-size:13px;color:var(--muted)}
+  .comment-actions{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .comment-tools{display:flex;align-items:center;gap:8px}
+  .comment-pill{background:var(--panel-2);border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:999px;color:var(--ink);display:inline-flex;align-items:center;gap:8px;font-size:13px}
+  .reply-inline{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px 8px;border-radius:999px;font-size:13px}
+  .comment-actions .react-btn{padding:4px 8px;font-size:12px}
+  .comment-actions .reply-btn{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:13px}
+  .comment-replies{margin-left:44px;margin-top:6px;display:flex;flex-direction:column;gap:6px}
+  .comment-count{background:rgba(255,255,255,0.04);padding:4px 8px;border-radius:999px;margin-left:8px;font-size:13px;color:var(--ink);display:inline-block}
+  .comment-item.pulse{animation:postPulse .9s ease}
+    .post-title{margin:10px 0 4px;font-weight:700}
+    .post-desc{margin:0;color:#cbd5e1;font-size:14px}
+    .post-img{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid #1f2937;display:flex;justify-content:center}
+    .announcement{border:1px dashed #7c3aed}
+    .contest-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#a5b4fc;background:#0b1220;border:1px solid #2a3150;border-radius:999px;padding:4px 8px;margin-top:6px}
+    .contest-badge .dot{width:6px;height:6px;border-radius:999px;background:#a78bfa}
+    .actions{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+    .react-row{display:flex;gap:8px;flex-wrap:wrap}
+    .react-btn{background:#0b1220;border:1px solid #172033;border-radius:999px;padding:6px 10px;font-size:13px;color:#e5e7eb;cursor:pointer;transition:.15s transform, .2s box-shadow, .2s border-color;display:inline-flex;align-items:center;gap:8px}
+    .react-btn:hover{transform:translateY(-1px)}
+    .react-btn.bump{animation:reactBump .22s ease}
+    @keyframes reactBump{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-1px) scale(1.08)}100%{transform:translateY(0) scale(1)}}
+  /* Reaction animations: emoji pop, count bump, floating emoji and post points pulse */
+  .react-emoji.pop{animation:reactPop .36s cubic-bezier(.2,.8,.2,1); transform-origin:center}
+  .react-count.bump{animation:countBump .28s ease}
+  @keyframes reactPop{0%{transform:scale(.6);opacity:0}50%{transform:scale(1.25);opacity:1}100%{transform:scale(1)}}
+  @keyframes countBump{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-6px) scale(1.08)}100%{transform:translateY(0) scale(1)}}
+  .float-emoji{position:fixed;pointer-events:none;font-size:18px;z-index:9999;transform:translate(-50%,0);}
+  @keyframes floatUp{0%{opacity:1;transform:translate(-50%,0) scale(1)}60%{transform:translate(-50%,-34px) scale(1.3);opacity:1}100%{transform:translate(-50%,-68px) scale(1);opacity:0}}
+  .float-emoji.animate{animation:floatUp .9s cubic-bezier(.2,.9,.2,1) forwards}
+  .post-points.pulse{animation:postPulse .9s ease}
+  @keyframes postPulse{0%{transform:scale(1);color:var(--muted)}30%{transform:scale(1.06);color:var(--good)}100%{transform:scale(1);color:var(--ink)}}
+  /* Reaction picker (Facebook-like) */
+  .reaction-picker{position:fixed;display:flex;gap:8px;padding:8px;border-radius:999px;background:#0b1220;border:1px solid rgba(255,255,255,0.04);box-shadow:0 8px 40px rgba(2,6,23,.6);z-index:10000;transform-origin:center;transition:transform .12s cubic-bezier(.2,.9,.2,1),opacity .12s ease;opacity:0;transform:scale(.85)}
+  .reaction-picker.show{opacity:1;transform:scale(1)}
+  .reaction-picker button{background:transparent;border:0;padding:6px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1}
+  .reaction-picker button:hover{transform:translateY(-6px) scale(1.15)}
+  /* Lightbox for full-size image preview */
+  .lightbox{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.85);z-index:10002;opacity:0;pointer-events:none;transition:opacity .16s ease}
+  .lightbox.show{opacity:1;pointer-events:auto}
+  /* Users modal */
+  .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:10005;opacity:0;pointer-events:none;transition:opacity .12s ease}
+  .modal.show{opacity:1;pointer-events:auto}
+  .modal .panel{width:760px;max-width:94%;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 20px 60px rgba(2,6,23,.6);color:var(--ink)}
+  .users-list{max-height:360px;overflow:auto;margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .user-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.02));border:1px solid rgba(255,255,255,0.02)}
+  .user-left{display:flex;align-items:center;gap:12px}
+  .user-actions{display:flex;gap:8px}
+  .lightbox img{max-width:92%;max-height:92%;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .lightbox .close-hint{position:absolute;top:18px;right:20px;color:#cbd5e1;font-size:13px}
+    .react-emoji{font-size:16px}
+    .react-count{font-size:12px;padding:2px 6px;border-radius:999px;background:rgba(148,163,184,.12);color:#cbd5e1}
+    .react-btn[data-reaction="like"]:hover{ border-color:var(--like); box-shadow:0 0 0 1px var(--like) inset, 0 0 16px rgba(96,165,250,.22) }
+    .react-btn[data-reaction="love"]:hover{ border-color:var(--love); box-shadow:0 0 0 1px var(--love) inset, 0 0 16px rgba(251,113,133,.22) }
+    .react-btn[data-reaction="wow"]:hover{  border-color:var(--wow);  box-shadow:0 0 0 1px var(--wow)  inset, 0 0 16px rgba(251,191,36,.22) }
+    .react-btn[data-reaction="fire"]:hover{ border-color:var(--fire); box-shadow:0 0 0 1px var(--fire) inset, 0 0 16px rgba(251,146,60,.22) }
+    .react-btn[data-reaction="clap"]:hover{ border-color:var(--clap); box-shadow:0 0 0 1px var(--clap) inset, 0 0 16px rgba(52,211,153,.22) }
+    .contest-card{margin-top:10px;padding:10px;border-radius:10px;background:var(--panel-2);border:1px solid #172033}
+    .lesson-item{margin-top:10px;padding:10px;border-radius:10px;background:var(--panel-2);border:1px solid #172033}
+    .muted{color:#94a3b8;font-size:12px}
+    .hidden{display:none !important}
+    .lessons-tools h3{margin:0 0 8px}
+    .mgr-row{display:flex;gap:10px;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:#9aa6b2}
+    .field input,.field textarea,.field select{background:#0b1220;border:1px solid #172033;border-radius:10px;color:#fff;padding:8px 10px;font-size:14px;outline:none}
+    .bad{color:#fecaca}
+    .good{color:#bbf7d0}
+    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #2a3150;background:#0b1220;padding:4px 8px;border-radius:999px;font-size:12px}
+    .pill .x{cursor:pointer;opacity:.85}
+    .lesson-view .viewer{border:1px solid #172033;border-radius:12px;overflow:hidden;background:#0b1220}
+    .file-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+    .file-tab{padding:6px 10px;border:1px solid #172033;background:#0d1526;border-radius:999px;font-size:12px;cursor:pointer}
+    .file-tab.is-active{border-color:#7c3aed;box-shadow:0 0 0 1px #7c3aed inset}
+    .quiz .q{border-top:1px solid #172033;padding-top:10px;margin-top:10px}
+    .quiz .ans-opts{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+    .score{font-weight:700}
+  /* Notifications redesign */
+  .notifs{display:flex;flex-direction:column;gap:8px}
+  .notif-item{display:flex;justify-content:space-between;gap:10px;padding:10px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.02));border:1px solid rgba(255,255,255,0.03);align-items:flex-start}
+  .notif-item.unread{background:linear-gradient(180deg,rgba(124,58,237,0.06),rgba(0,0,0,0.02));box-shadow:0 6px 18px rgba(124,58,237,0.04);}
+  .notif-left{display:flex;gap:10px;align-items:flex-start}
+  .notif-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#081026;border:1px solid rgba(255,255,255,0.03);font-size:18px}
+  .notif-body{flex:1}
+  .notif-text{font-size:13px;color:var(--ink)}
+  .notif-meta{font-size:12px;color:var(--muted);margin-top:6px}
+  .notif-actions{display:flex;gap:8px;align-items:center}
+  .notif-dismiss{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px}
+  .notif-mark{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px}
+  .notif-type{font-size:12px;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted);margin-right:6px}
+  /* File picker (BG) styling */
+  .file-picker{display:inline-flex;align-items:center;gap:10px;padding:6px 12px;border-radius:999px;background:linear-gradient(90deg,#3b82f6,#7c3aed);color:white;border:0;font-size:13px}
+  .file-picker .label-short{font-weight:700}
+  .file-picker input[type=file]{position:absolute;left:-9999px;opacity:0;width:1px;height:1px}
+  .file-picker .file-name{max-width:180px;display:inline-block;color:rgba(255,255,255,0.9);font-size:13px;background:rgba(0,0,0,0.12);padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  @media (max-width:900px){ .file-picker .file-name{display:none} }
+    .warn-box{border:1px dashed #f59e0b;background:#0f1724;padding:8px;border-radius:10px;margin-top:8px}
+    .ok-box{border:1px dashed #22c55e;background:#0f1724;padding:8px;border-radius:10px;margin-top:8px}
+    @keyframes pulseGlow{0%{filter:drop-shadow(0 0 0)}50%{filter:drop-shadow(0 0 12px)}100%{filter:drop-shadow(0 0 0)}}
+    .rank-pulse{animation:pulseGlow 1.6s ease-in-out}
+    @media (max-width: 900px){.layout{grid-template-columns:1fr;gap:16px}.tabs{display:none}.nav-rt input{display:none}}
+  </style>
+</head>
+<body>
+  <div id="bg-layer" class="bg-layer"></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">NC</div>
+        <div>
+          <h1>NeonCanvas</h1>
+          <p style="margin:4px 0 0;color:#94a3b8;font-size:12px">Design community · Gamified · Dark mode</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <div class="tabs">
+          <button data-tab="home" class="tab is-active">Home</button>
+          <button data-tab="contests" class="tab">Contests</button>
+          <button data-tab="lessons" class="tab">Lessons</button>
+
+          <a href="profile.html" class="tab" data-tab="profile">Profile</a>
+          <a href="leaderboard.html" class="tab">Leaderboard</a>
+          <!-- Notifications tab removed from topbar (sidebar notifications remain) -->
+        </div>
+        <div class="nav-rt">
+          <input id="search" type="text" placeholder="Search designs, tags..." />
+          <label class="ghost-btn file-picker" title="Set background image (upload)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#fff" viewBox="0 0 24 24"><path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v10zM8 13l2.5 3 3.5-4.5L18 17H6l2-4z"/></svg>
+            <span class="label-short">BG</span>
+            <span class="file-name">No file chosen</span>
+            <input id="bg-file" type="file" accept="image/*" />
+          </label>
+          <button id="bg-reset" class="ghost-btn" title="Reset BG">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#fff" viewBox="0 0 24 24"><path d="M12 6V3L8 7l4 4V8c2.757 0 5 2.243 5 5a5 5 0 0 1-9.584 2.001l-1.832.804A7 7 0 1 0 12 6z"/></svg>
+            <span>Reset</span>
+          </button>
+          <button id="logout-btn" class="ghost-btn" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#fff" viewBox="0 0 20 20">
+              <path d="M2 5a2 2 0 012-2h8a2 2 0 012 2v4h-2V5H4v10h6v-3h2v3a2 2 0 01-2 2H4a2 2 0 01-2-2V5z"/>
+              <path d="M14 9l4 4m0 0l-4 4m4-4H9"/>
+            </svg>
+          </button>
+          <button id="users-btn" class="ghost-btn" title="Users" style="display:none">Users</button>
+          <div class="me-chip" id="me-chip">User</div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="layout">
+      <section class="maincol">
+        <div id="contest-manager" class="card manager hidden">
+          <h3>Contest Manager</h3>
+          <p class="muted">Create & announce contests.</p>
+          <div class="mgr-row" style="margin-top:10px">
+            <div class="field" style="flex:1 1 280px">
+              <label>Title</label><input id="cm-title" placeholder="e.g. Logo Sprint #7" />
+            </div>
+            <div class="field" style="width:200px">
+              <label>Prize</label><input id="cm-prize" placeholder="e.g. 150 pts" />
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Description (optional)</label><textarea id="cm-desc" placeholder="Brief, rules, deadline..."></textarea>
+          </div>
+          <div class="mgr-row" style="margin-top:10px">
+            <label class="muted"><input id="cm-announce" type="checkbox" checked /> Announce to Home</label>
+            <button id="cm-create" class="btn gradient">Create</button>
+          </div>
+          <div id="cm-list" style="margin-top:14px"></div>
+        </div>
+
+        <div id="lessons-section" class="hidden">
+          <div id="lessons-tools" class="card manager lessons-tools">
+            <h3>Lessons · Teacher tools</h3>
+            <div class="mgr-row" style="align-items:center">
+              <label class="muted"><input id="ls-teacher-toggle" type="checkbox" /> I'm a teacher (create mode)</label>
+              <div id="ls-teacher-hint" class="muted">Хэрэв та сурагч бол энэ хэсгийг унтрааж болно.</div>
+            </div>
+
+            <div id="ls-creator" class="hidden">
+              <div class="mgr-row" style="margin-top:10px">
+                <div class="field" style="flex:1 1 240px"><label>Title *</label><input id="ls-title" placeholder="e.g. Fractions Basics" /></div>
+                <div class="field" style="width:180px"><label>Subject</label><input id="ls-subject" placeholder="Math" /></div>
+                <div class="field" style="width:140px"><label>Grade</label><input id="ls-grade" placeholder="4" /></div>
+                <div class="field" style="flex:1 1 200px"><label>Teacher</label><input id="ls-teacher" placeholder="Your name" /></div>
+              </div>
+              <div class="field" style="margin-top:10px"><label>Description</label><textarea id="ls-desc" placeholder="Short brief, learning outcomes..."></textarea></div>
+
+              <div class="mgr-row" style="margin-top:10px;align-items:center">
+                <label class="upload">+ Files<input id="ls-files" type="file" multiple hidden /></label>
+                <div class="muted">Зураг, видео, аудио, PDF, TXT/MD/HTML болон бусад файлууд</div>
+              </div>
+              <div id="ls-filelist" class="muted" style="margin-top:8px"></div>
+              <div class="warn-box hidden" id="ls-bigwarn">⚠ Том файл(ууд) эпемер байдлаар хадгалагдана.</div>
+
+              <div class="card" style="margin-top:12px">
+                <h4 style="margin:0 0 8px">Practice · Quiz builder</h4>
+                <div class="mgr-row">
+                  <div class="field" style="width:220px">
+                    <label>Question type</label>
+                    <select id="q-type">
+                      <option value="mc">Multiple choice</option>
+                      <option value="tf">True / False</option>
+                      <option value="sa">Short answer</option>
+                    </select>
+                  </div>
+                  <div class="field" style="width:120px">
+                    <label>Points</label>
+                    <input id="q-points" type="number" min="1" value="10"/>
+                  </div>
+                </div>
+
+                <div id="q-form-mc" class="qform" style="margin-top:8px">
+                  <div class="field"><label>Question</label><input id="q-mc-text" placeholder="e.g. 1/2 equals to?" /></div>
+                  <div class="mgr-row">
+                    <div class="field" style="flex:1"><label>Option A</label><input id="q-mc-a"/></div>
+                    <div class="field" style="flex:1"><label>Option B</label><input id="q-mc-b"/></div>
+                  </div>
+                  <div class="mgr-row">
+                    <div class="field" style="flex:1"><label>Option C</label><input id="q-mc-c"/></div>
+                    <div class="field" style="flex:1"><label>Option D</label><input id="q-mc-d"/></div>
+                  </div>
+                  <div class="mgr-row" style="align-items:center">
+                    <label class="muted">Correct:
+                      <select id="q-mc-correct">
+                        <option value="0">A</option><option value="1">B</option>
+                        <option value="2">C</option><option value="3">D</option>
+                      </select>
+                    </label>
+                    <button id="q-add" class="btn gradient" type="button">Add question</button>
+                  </div>
+                </div>
+
+                <div id="q-form-tf" class="qform hidden" style="margin-top:8px">
+                  <div class="field"><label>Statement</label><input id="q-tf-text" placeholder="e.g. A square is a rectangle."/></div>
+                  <div class="mgr-row" style="align-items:center">
+                    <label class="muted">Answer:
+                      <select id="q-tf-ans"><option value="true">True</option><option value="false">False</option></select>
+                    </label>
+                    <button id="q-add-tf" class="btn gradient" type="button">Add question</button>
+                  </div>
+                </div>
+
+                <div id="q-form-sa" class="qform hidden" style="margin-top:8px">
+                  <div class="field"><label>Question</label><input id="q-sa-text" placeholder="e.g. What is 7 + 5?"/></div>
+                  <div class="field"><label>Answer</label><input id="q-sa-ans" placeholder="12"/></div>
+                  <div class="mgr-row" style="align-items:center">
+                    <button id="q-add-sa" class="btn gradient" type="button">Add question</button>
+                  </div>
+                </div>
+
+                <div id="q-list" class="muted" style="margin-top:10px">No questions yet.</div>
+              </div>
+
+              <div class="mgr-row" style="margin-top:10px">
+                <button id="ls-create" class="btn pink">Create lesson</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="lessons-list" class="card lesson-card" style="margin-top:12px">
+            <h3 style="margin:0 0 8px">All lessons</h3>
+            <div id="lessons-list-body" class="muted">No lessons yet.</div>
+          </div>
+
+          <div id="lesson-viewer" class="card lesson-view hidden" style="margin-top:12px">
+            <div id="lv-head" style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+              <div>
+                <h3 id="lv-title" style="margin:0"></h3>
+                <div id="lv-meta" class="muted"></div>
+              </div>
+              <button id="lv-close" class="btn ghost" type="button">Close</button>
+            </div>
+
+            <div id="lv-files" class="file-tabs"></div>
+            <div class="viewer" style="margin-top:8px">
+              <div id="lv-view" style="width:100%;min-height:280px;background:#0b1220;display:flex;align-items:center;justify-content:center">—</div>
+            </div>
+
+            <div class="quiz" id="lv-quiz" style="margin-top:12px">
+              <h4 style="margin:0 0 6px">Practice</h4>
+              <form id="quiz-form">
+                <div id="quiz-body"></div>
+                <div class="mgr-row" style="margin-top:10px;align-items:center">
+                  <button id="quiz-submit" class="btn gradient" type="submit">Submit answers</button>
+                  <div id="quiz-score" class="score"></div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="card composer" id="composer">
+          <div class="avatar" id="me-avatar-box">ED</div>
+          <div style="flex:1">
+            <input id="composer-title" class="input title" placeholder="Post title" />
+            <textarea id="composer-desc" class="input desc" placeholder="Describe your work, add tags, or drop a link..."></textarea>
+
+            <div class="composer-affix">
+              <label for="composer-contest">Contest</label>
+              <select id="composer-contest"></select>
+              <button id="contest-new-btn" class="btn ghost" type="button">+ New</button>
+            </div>
+            <div id="contest-quick" class="composer-affix hidden" style="gap:8px;margin-top:8px">
+              <input id="cq-title" placeholder="Contest title" />
+              <input id="cq-prize" placeholder="Prize (e.g. 100 pts)" />
+              <label class="muted"><input id="cq-announce" type="checkbox" checked /> Announce</label>
+              <button id="cq-create" class="btn gradient" type="button">Create & select</button>
+              <button id="cq-cancel" class="btn ghost" type="button">Cancel</button>
+            </div>
+
+            <div class="composer-actions">
+              <label class="upload">Upload <input id="composer-file" type="file" accept="image/*" hidden /></label>
+              <button id="publish-btn" class="btn gradient">Publish</button>
+            </div>
+
+            <div id="composer-preview-wrap" class="preview hidden">
+              <img id="composer-preview" alt="preview" decoding="async" />
+            </div>
+          </div>
+        </div>
+
+        <div id="contest-chips" class="chips"></div>
+        <div id="feed" class="feed"></div>
+      </section>
+
+      <aside class="sidecol">
+        <div class="card">
+          <h4>Leaderboard</h4>
+          <ol id="leaderboard" class="leaderboard"></ol>
+        </div>
+
+        <div class="card">
+          <h4>Contests</h4>
+          <div id="contests" class="contests"></div>
+          <button id="create-contest" class="btn pink full">Create contest</button>
+        </div>
+
+        <div class="card">
+          <h4>Lessons</h4>
+          <div id="lessons-side"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <h4 style="margin:0">Notifications</h4>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div id="notif-unread" class="pill" style="font-size:12px;display:none">Unread <span id="notif-unread-count" style="font-weight:700;margin-left:6px">0</span></div>
+              <button id="notif-mark-all" class="btn ghost" title="Mark all read">Mark all read</button>
+            </div>
+          </div>
+          <div id="notifications" class="notifs" style="margin-top:10px"></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer style="max-width:1120px;margin:24px auto 40px;text-align:center;color:#8a94a7;font-size:12px">
+      Built for designers — neon vibes, gamified community.
+    </footer>
+  </div>
+
+  <!-- Users panel modal -->
+  <div id="users-panel" class="modal" aria-hidden="true">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <h3 style="margin:0">Registered Users</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="users-refresh" class="btn">Refresh</button>
+          <button id="users-close" class="btn">Close</button>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:8px">List of users persisted in localStorage (<code>neon_users_v1</code>). Teachers can manage users here.</p>
+      <div id="users-list" class="users-list"></div>
+    </div>
+  </div>
+
+  <script>
+    // ------- Helpers / Keys (compat: no optional chaining / nullish) -------
+    var LOCAL_KEYS = {
+      POSTS:"neon_posts_v1", NOTIFS:"neon_notifs_v1", CONTESTS:"neon_contests_v1",
+      BG:"neon_bg_v1", ME:"neon_me_v1", AUTH:"neon_auth_v1", USERS: "neon_users_v1",
+      LESSONS:"neon_lessons_v1", LPOINTS:"neon_lpoints_v1", LTEACHER:"neon_lteacher_v1"
+    };
+    var REACTION_POINTS = { like:1, love:2, wow:1.5, fire:2.5, clap:1 };
+    var REACTION_EMOJI  = { like:"👍", love:"❤️", wow:"😮", fire:"🔥", clap:"👏" };
+    var RANKS = [
+      { name:"Novice Spark", icon:"✨", min:0,   color:"#7f8cff" },
+      { name:"Glyph Crafter", icon:"🔮", min:20,  color:"#b57bff" },
+      { name:"Aether Painter", icon:"🌌", min:60,  color:"#d96bff" },
+      { name:"Illusion Shaper", icon:"🌀", min:120, color:"#ff72d2" },
+      { name:"Astral Designer", icon:"💫", min:200, color:"#ff56b8" },
+      { name:"Ethereal Master", icon:"🌠", min:350, color:"#ff3ca6" },
+      { name:"Lumen Archmage", icon:"🔥✨", min:550, color:"#ff2d95" }
+    ];
+    var sampleUsers = [
+      { id:1, name:"Nara T.", avatar:"NT" },
+      { id:2, name:"Bataa S.", avatar:"BS" },
+      { id:3, name:"Enkhtuya D.", avatar:"ED" }
+    ];
+    function $(s,root){return (root||document).querySelector(s)}
+    function $$(s,root){return Array.prototype.slice.call((root||document).querySelectorAll(s))}
+    function esc(s){ s = (s==null? "": String(s)); return s.replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+    function calcPostPoints(p){
+      var pts=0; var r; for(r in (p.reactions||{})){ if(Object.prototype.hasOwnProperty.call(p.reactions,r)){ var c=p.reactions[r]; var k = (REACTION_POINTS[r]!==undefined && REACTION_POINTS[r]!==null)? REACTION_POINTS[r] : 1; pts+=k*c; } }
+      return Math.round(pts*10)/10;
+    }
+    function getRank(points){ var cur=RANKS[0]; for(var i=0;i<RANKS.length;i++){ if(points>=RANKS[i].min) cur=RANKS[i]; } return cur; }
+
+    // ------- Auth -------
+    var bus=null; try{ bus=new BroadcastChannel('neon_sync'); }catch(e){ bus=null; }
+    function isAuthed(){ try{ var a=JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); return !!(a && a.loggedIn); }catch(e){ return false; } }
+    function ensureAuthOrRedirect(){ if(!isAuthed()){ window.location.href='login.html'; return false; } return true; }
+    function broadcast(type,payload){ if(bus){ try{ bus.postMessage({type:type,payload:payload}); }catch(e){} } try{ localStorage.setItem('neon_ping', String(Date.now())); }catch(e){} }
+    function logout(){ try{ localStorage.setItem(LOCAL_KEYS.AUTH, JSON.stringify({loggedIn:false})); }catch(e){} broadcast('AUTH_CHANGED',{loggedIn:false}); window.location.href='login.html'; }
+
+    // ------- State -------
+    var me = { id:3, name:"Enkhtuya D.", avatar:"ED", bio:"", avatarImage:null };
+    var state = {
+      activeTab:"home",
+      posts:[], contests:[], notifications:[],
+      usersPoints:{}, levelUps:{},
+      previewDataUrl:null, previewMeta:null, bgDataUrl:null,
+      selectedContestId:null, activeContestFilter:null,
+      lessons:[], lessonScores:{}, teacherMode:false,
+      lsDraftFiles:[], lsBigFlag:false, lsDraftQuiz:[],
+      openLessonId:null, openLessonFileIdx:0,
+      searchQuery: null,
+      openComments: {}
+    };
+    function getUserById(id){ if(id===me.id) return { id:me.id, name:me.name, avatar:me.avatar, avatarImage:me.avatarImage }; for(var i=0;i<sampleUsers.length;i++){ if(sampleUsers[i].id===id) return sampleUsers[i]; } return {id:id,name:"Guest",avatar:"G"}; }
+    function getContestById(id){ for(var i=0;i<state.contests.length;i++){ if(state.contests[i].id===id) return state.contests[i]; } return null; }
+    function getLessonById(id){ for(var i=0;i<state.lessons.length;i++){ if(state.lessons[i].id===id) return state.lessons[i]; } return null; }
+
+    // ------- BG -------
+    function applyBackground(url,opts){ opts=opts||{}; var persist=(opts.persist!==false); var layer=$("#bg-layer"); if(layer){ layer.style.backgroundImage='linear-gradient(0deg, rgba(5,10,20,.55), rgba(5,10,20,.66)), url("'+url+'")'; layer.classList.add("has-image"); } state.bgDataUrl=url; if(persist){ try{ localStorage.setItem(LOCAL_KEYS.BG, JSON.stringify({dataUrl:url})); }catch(e){} } }
+    function resetBackground(){ var layer=$("#bg-layer"); if(layer){ layer.style.backgroundImage=""; layer.classList.remove("has-image"); } state.bgDataUrl=null; try{ localStorage.removeItem(LOCAL_KEYS.BG); }catch(e){} }
+
+    // ------- Me -------
+    function loadMe(){
+      try{ var raw=JSON.parse(localStorage.getItem(LOCAL_KEYS.ME)||"null"); if(raw && raw.id){ for(var k in raw){ if(Object.prototype.hasOwnProperty.call(raw,k)) me[k]=raw[k]; } } }catch(e){}
+      // read auth role (set in login) so we know if the signed-in user is teacher or student
+      try{ var auth = JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); if(auth && auth.role){ state.role = auth.role; state.teacherMode = (auth.role === 'teacher'); } }catch(e){}
+      // show me and role in UI
+      var chip=$("#me-chip"); if(chip){ chip.textContent = me.name || "User"; if(state.role){ chip.textContent += ' · ' + (state.role==='teacher' ? 'Teacher' : 'Student'); } }
+      var box=$("#me-avatar-box"); if(box){ if(me.avatarImage){ box.innerHTML='<img src="'+me.avatarImage+'" alt="avatar">'; } else { var av=me.avatar || (me.name? me.name.split(' ').map(function(s){return s[0]}).join('').slice(0,2).toUpperCase() : "U"); box.textContent=av; } }
+    }
+
+    // ------- Persistence -------
+    var defaultPosts = [
+      { id:101, userId:1, title:"Neon City Poster", description:"A quick exploration of neon gradients and depth for a cyberpunk poster.", image:"https://images.unsplash.com/photo-1505685296765-3a2736de412f?q=80&w=1200&auto=format&fit=crop", reactions:{ like:4, love:2, wow:1 }, comments:[{ id:1, userId:2, text:"Love the glow — nice balance!" }], createdAt: (Date.now() - 1000*60*60*24) },
+      { id:102, userId:2, title:"Logo concepts — minimal", description:"Minimal mark for a modern coffee brand — playing with negative space.", image:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop", reactions:{ like:8, love:5, wow:0, fire:1 }, comments:[], createdAt: (Date.now() - 1000*60*60*6) }
+    ];
+    function loadState(){
+      try{ var bg=JSON.parse(localStorage.getItem(LOCAL_KEYS.BG)||"null"); if(bg && bg.dataUrl) applyBackground(bg.dataUrl,{persist:false}); }catch(e){}
+      try{ var p=JSON.parse(localStorage.getItem(LOCAL_KEYS.POSTS)||"null"); state.posts = Array.isArray(p)?p: defaultPosts; }catch(e){ state.posts=defaultPosts; }
+      try{ var c=JSON.parse(localStorage.getItem(LOCAL_KEYS.CONTESTS)||"null"); state.contests = Array.isArray(c)?c:[]; }catch(e){ state.contests=[]; }
+      try{ var n=JSON.parse(localStorage.getItem(LOCAL_KEYS.NOTIFS)||"null"); state.notifications = Array.isArray(n)?n:[]; }catch(e){ state.notifications=[]; }
+      try{ var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null"); state.lessons = Array.isArray(l)?l:[]; }catch(e){ state.lessons=[]; }
+      try{ var s=JSON.parse(localStorage.getItem(LOCAL_KEYS.LPOINTS)||"null"); state.lessonScores = (s && typeof s==='object') ? s : {}; }catch(e){ state.lessonScores = {}; }
+      try{ var t=JSON.parse(localStorage.getItem(LOCAL_KEYS.LTEACHER)||"null"); // prefer explicit auth role (from login) and ignore local toggle when role present
+        if(state.role){
+          state.teacherMode = (state.role==='teacher');
+        } else {
+          state.teacherMode = !!t;
+        }
+      }catch(e){ state.teacherMode = (state.role==='teacher'); }
+      recalcUserPoints(true);
+    }
+    function saveState(){
+      try{ localStorage.setItem(LOCAL_KEYS.POSTS, JSON.stringify(state.posts)); }catch(e){}
+      try{ localStorage.setItem(LOCAL_KEYS.CONTESTS, JSON.stringify(state.contests)); }catch(e){}
+      try{ localStorage.setItem(LOCAL_KEYS.NOTIFS, JSON.stringify(state.notifications)); }catch(e){}
+      try{ localStorage.setItem(LOCAL_KEYS.LESSONS, JSON.stringify(state.lessons)); }catch(e){}
+    }
+    function saveLessonScores(){ try{ localStorage.setItem(LOCAL_KEYS.LPOINTS, JSON.stringify(state.lessonScores)); }catch(e){} }
+
+    function recalcUserPoints(initial){
+      if(typeof initial==='undefined') initial=false;
+      var prev=state.usersPoints, map={}, i;
+      for(i=0;i<sampleUsers.length;i++) map[sampleUsers[i].id]=0;
+      map[me.id]= (map[me.id]||0);
+      for(i=0;i<state.posts.length;i++){ var p=state.posts[i]; map[p.userId]=(map[p.userId]||0)+calcPostPoints(p); }
+      for(var uid in (state.lessonScores||{})){ if(Object.prototype.hasOwnProperty.call(state.lessonScores,uid)){ var pts=+state.lessonScores[uid]||0; map[+uid]=(map[+uid]||0)+pts; } }
+      if(!initial){
+        var users = sampleUsers.slice(); users.push(me);
+        for(i=0;i<users.length;i++){ var u=users[i]; var a=(prev[u.id]||0), b=(map[u.id]||0); if(b>a){ var rA=getRank(a), rB=getRank(b); if(rA.name!==rB.name){ state.levelUps[u.id]=Date.now(); state.notifications.unshift({ id:Date.now()+Math.random(), text:(getUserById(u.id).name+" advanced: "+rA.name+" → "+rB.name), time:Date.now() }); } } }
+    for(i=0;i<users.length;i++){ var u=users[i]; var a=(prev[u.id]||0), b=(map[u.id]||0); if(b>a){ var rA=getRank(a), rB=getRank(b); if(rA.name!==rB.name){ state.levelUps[u.id]=Date.now(); notify(getUserById(u.id).name+" advanced: "+rA.name+" → "+rB.name); } } }
+      }
+      state.usersPoints=map;
+      setTimeout(function(){ var now=Date.now(); for(var k in state.levelUps){ if(Object.prototype.hasOwnProperty.call(state.levelUps,k)){ if(now-state.levelUps[k]>1600) delete state.levelUps[k]; } } render(); },1700);
+    }
+
+    // ------- Contests -------
+    function createContest(cfg){
+      // permission check: only teachers can create contests
+      try{ var _a = JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); var _authRole = _a && _a.role; }catch(e){ var _authRole = null; }
+      var isTeacher = (_authRole === 'teacher') || (state.role === 'teacher') || !!state.teacherMode;
+      if(!isTeacher){ alert('Only teachers can create contests.'); return null; }
+      cfg = cfg || {}; var title=cfg.title||"Untitled Contest", prize=cfg.prize||"100 pts", description=cfg.description||"", announce=!!cfg.announce;
+      var c={ id:Date.now(), title:title, prize:prize, description:description, status:"open", entries:[], createdAt:Date.now(), announced:false };
+      state.contests.unshift(c);
+  notify('Contest "'+title+'" created');
+      if(announce){ announceContestPost(c); c.announced=true; }
+      saveState(); renderContests(); renderContestChips(); renderContestManagerList(); renderComposerContestOptions();
+      broadcast('CONTESTS_UPDATED', null);
+      return c;
+    }
+    function toggleContestStatus(id){
+      var i=-1; for(var j=0;j<state.contests.length;j++){ if(state.contests[j].id===id){ i=j; break; } }
+      if(i<0) return;
+      state.contests[i].status = (state.contests[i].status==="open"?"closed":"open");
+      saveState(); renderContests(); renderContestManagerList(); renderComposerContestOptions();
+      broadcast('CONTESTS_UPDATED', null);
+    }
+    function announceContestPost(contest){
+      var post={ id:Date.now(), userId:me.id, title:'🏁 '+contest.title, description:'Prize: '+contest.prize+(contest.description? ' — '+contest.description:''), image:null, reactions:{}, comments:[], createdAt:Date.now(), type:"contest_announcement", contestId:contest.id };
+      state.posts.unshift(post);
+  notify('Announced contest "'+contest.title+'"');
+      saveState(); render(); broadcast('POSTS_UPDATED', null);
+    }
+    function joinContest(contestId, postId){
+      var i=-1; for(var j=0;j<state.contests.length;j++){ if(state.contests[j].id===contestId){ i=j; break; } }
+      if(i<0) return;
+      var ent = {}; var arr = state.contests[i].entries || []; for(var k=0;k<arr.length;k++){ ent[arr[k]]=true; } ent[postId]=true;
+      var out=[]; for(var key in ent){ if(Object.prototype.hasOwnProperty.call(ent,key)) out.push(+key); }
+      state.contests[i].entries = out;
+      saveState(); renderContests(); renderContestManagerList();
+      broadcast('CONTESTS_UPDATED', null);
+    }
+
+    // ------- Lessons -------
+    var DATAURL_MAX = 2.5 * 1024 * 1024;
+    function handleLessonsFileInput(files){
+      state.lsDraftFiles=[]; state.lsBigFlag=false;
+      var tasks=[];
+      Array.prototype.forEach.call(files||[], function(f){
+        if(f.size <= DATAURL_MAX){
+          tasks.push(new Promise(function(res){
+            var r=new FileReader();
+            r.onload=function(){ res({ id:Date.now()+Math.random(), name:f.name, size:f.size, mime:f.type||'application/octet-stream', dataUrl:r.result, ephemeral:false }); };
+            r.readAsDataURL(f);
+          }));
+        }else{
+          state.lsBigFlag=true;
+          var href = URL.createObjectURL(f);
+          state.lsDraftFiles.push({ id:Date.now()+Math.random(), name:f.name, size:f.size, mime:f.type||'application/octet-stream', href:href, ephemeral:true });
+        }
+      });
+      Promise.all(tasks).then(function(arr){
+        state.lsDraftFiles = state.lsDraftFiles.concat(arr);
+        renderLessonsFilesPreview();
+      });
+      renderLessonsFilesPreview();
+    }
+    function renderLessonsFilesPreview(){
+      var box=$("#ls-filelist"); if(!box) return;
+      if(!state.lsDraftFiles.length){ box.innerHTML="No files selected."; var bw=$("#ls-bigwarn"); if(bw) bw.classList.add("hidden"); return; }
+      box.innerHTML = state.lsDraftFiles.map(function(f){ var kb=Math.round(f.size/1024); return '<span class="pill">'+esc(f.name)+' <span class="muted">· '+kb+' KB</span>'+(f.ephemeral? ' <span class="bad">(ephemeral)</span>' : '')+'</span>'; }).join(" ");
+      var bw2=$("#ls-bigwarn"); if(bw2) bw2.classList.toggle("hidden", !state.lsBigFlag);
+    }
+    function addQuestionMC(){
+      var text = ($("#q-mc-text").value||"").trim();
+      var opts = ["#q-mc-a","#q-mc-b","#q-mc-c","#q-mc-d"].map(function(id){ return ($("#"+id.slice(1)).value||"").trim(); });
+      var correct = +$("#q-mc-correct").value;
+      var points = Math.max(1, +($("#q-points").value||"10") || 10);
+      var nonEmpty = opts.filter(function(s){return !!s}).length;
+      if(!text || nonEmpty<2){ alert("Багадаа 2 сонголт оруулна уу."); return; }
+      state.lsDraftQuiz.push({ id:Date.now()+Math.random(), type:"mc", q:text, opts:opts, correct:correct, points:points });
+      $("#q-mc-text").value = $("#q-mc-a").value = $("#q-mc-b").value = $("#q-mc-c").value = $("#q-mc-d").value = "";
+      renderQuizList();
+    }
+    function addQuestionTF(){
+      var text = ($("#q-tf-text").value||"").trim();
+      var ans = ($("#q-tf-ans").value==="true"); var points = Math.max(1, +($("#q-points").value||"10") || 10);
+      if(!text){ alert("Асуултаа бичнэ үү."); return; }
+      state.lsDraftQuiz.push({ id:Date.now()+Math.random(), type:"tf", q:text, answer: ans, points: points });
+      $("#q-tf-text").value = ""; renderQuizList();
+    }
+    function addQuestionSA(){
+      var text = ($("#q-sa-text").value||"").trim();
+      var ans = ($("#q-sa-ans").value||"").trim(); var points = Math.max(1, +($("#q-points").value||"10") || 10);
+      if(!text || !ans){ alert("Асуулт ба хариулт хоёрыг бөглөнө үү."); return; }
+      state.lsDraftQuiz.push({ id:Date.now()+Math.random(), type:"sa", q:text, answer: ans, points: points });
+      $("#q-sa-text").value = ""; $("#q-sa-ans").value = ""; renderQuizList();
+    }
+    function renderQuizList(){
+      var box=$("#q-list"); if(!box) return;
+      if(!state.lsDraftQuiz.length){ box.innerHTML="No questions yet."; return; }
+      box.innerHTML = state.lsDraftQuiz.map(function(q,i){
+        if(q.type==="mc"){ return '<div class="pill">Q'+(i+1)+'. MC · <span class="muted">'+esc(q.q.slice(0,60))+'</span></div>'; }
+        if(q.type==="tf"){ return '<div class="pill">Q'+(i+1)+'. T/F · <span class="muted">'+esc(q.q.slice(0,60))+'</span></div>'; }
+        return '<div class="pill">Q'+(i+1)+'. Short · <span class="muted">'+esc(q.q.slice(0,60))+'</span></div>';
+      }).join(" ");
+    }
+    function createLesson(){
+      // only teachers can create lessons
+      try{ var _a = JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); var _authRole = _a && _a.role; }catch(e){ var _authRole = null; }
+      var isTeacher = (_authRole === 'teacher') || (state.role === 'teacher') || !!state.teacherMode;
+      if(!isTeacher){ alert('Only teachers can create lessons.'); return; }
+      var title=(document.getElementById("ls-title").value||"").trim(); if(!title){ alert("Title * шаардлагатай."); return; }
+      var subject=(document.getElementById("ls-subject").value||"").trim(); var grade=(document.getElementById("ls-grade").value||"").trim(); var teacher=(document.getElementById("ls-teacher").value||"").trim() || me.name || "Teacher";
+      var description=(document.getElementById("ls-desc").value||"").trim();
+      var files = state.lsDraftFiles.map(function(f){ return Object.assign({}, f); });
+      var quiz  = state.lsDraftQuiz.map(function(q){ return Object.assign({}, q); });
+      var lesson = { id:Date.now(), title:title, subject:subject, grade:grade, teacher:teacher, description:description, files:files, quiz:quiz, attempts:[], createdAt:Date.now() };
+      state.lessons.unshift(lesson);
+  notify('Lesson "'+title+'" created');
+      document.getElementById("ls-title").value = document.getElementById("ls-subject").value = document.getElementById("ls-grade").value = document.getElementById("ls-teacher").value = ""; document.getElementById("ls-desc").value = "";
+      state.lsDraftFiles=[]; state.lsDraftQuiz=[]; state.lsBigFlag=false;
+      renderLessonsFilesPreview(); renderQuizList();
+      saveState(); renderLessonsList(); renderLessonsSide();
+      broadcast('LESSONS_UPDATED', null);
+    }
+    function openLesson(id){
+      state.openLessonId = id; state.openLessonFileIdx = 0; renderLessonViewer();
+      var el=document.getElementById("lesson-viewer"); if(el && el.scrollIntoView){ el.scrollIntoView({behavior:"smooth",block:"start"}); }
+    }
+    function closeLesson(){ state.openLessonId = null; renderLessonViewer(); }
+    function renderLessonsList(){
+      var body=$("#lessons-list-body"); if(!body) return;
+      if(!state.lessons.length){ body.innerHTML="No lessons yet."; return; }
+      body.innerHTML = state.lessons.map(function(l){
+        var files = (l.files && l.files.length) || 0;
+        var qs = (l.quiz && l.quiz.length) || 0;
+        return '<div class="lesson-item">'+
+          '<div style="display:flex;justify-content:space-between;gap:8px;align-items:center">'+
+            '<div>'+
+              '<div style="font-weight:600">'+esc(l.title)+'</div>'+
+              '<div class="muted">'+esc(l.subject||'—')+' · Grade '+esc(l.grade||'—')+' · '+esc(l.teacher||'—')+'</div>'+
+              '<div class="muted">Files: '+files+' · Questions: '+qs+'</div>'+
+            '</div>'+
+            '<button class="btn ghost" data-open-lesson="'+l.id+'">Open</button>'+
+          '</div>'+
+        '</div>';
+      }).join("");
+    }
+    function renderLessonsSide(){
+      var box=$("#lessons-side"); if(!box) return;
+      if(!state.lessons.length){ box.innerHTML='<div class="muted">No lessons</div>'; return; }
+      box.innerHTML = state.lessons.slice(0,5).map(function(l){
+        return '<div class="lesson-item"><div style="font-weight:600">'+esc(l.title)+'</div><div class="muted">'+esc(l.subject||'—')+' · G'+esc(l.grade||'—')+'</div><button class="btn ghost" data-open-lesson="'+l.id+'">Open</button></div>';
+      }).join("");
+    }
+    function buildFileURL(f){ if(f.dataUrl) return f.dataUrl; if(f.href) return f.href; return ""; }
+    function renderLessonViewer(){
+      var wrap=document.getElementById("lesson-viewer"); if(!wrap) return;
+      if(!state.openLessonId){ wrap.classList.add("hidden"); return; }
+      wrap.classList.remove("hidden");
+      var l = getLessonById(state.openLessonId); if(!l){ wrap.classList.add("hidden"); return; }
+      var lvTitle=document.getElementById("lv-title"); if(lvTitle) lvTitle.textContent=l.title;
+      var lvMeta=document.getElementById("lv-meta"); if(lvMeta) lvMeta.textContent=(l.subject||'—')+' · Grade '+(l.grade||'—')+' · '+(l.teacher||'—');
+      var tabs=document.getElementById("lv-files"); if(tabs){ tabs.innerHTML = (l.files||[]).map(function(f,idx){ return '<button class="file-tab '+(idx===state.openLessonFileIdx?'is-active':'')+'" data-file-idx="'+idx+'">'+esc(f.name)+'</button>'; }).join(""); }
+      var f = (l.files && l.files[state.openLessonFileIdx]) ? l.files[state.openLessonFileIdx] : null;
+      var v=document.getElementById("lv-view"); if(v){ v.innerHTML="—"; if(f){ var url=buildFileURL(f); var mime=(f.mime||"").toLowerCase(); if(mime.indexOf("image/")===0){ v.innerHTML='<img src="'+url+'" alt="'+esc(f.name)+'" style="max-width:100%;height:auto;display:block" />'; } else if(mime.indexOf("video/")===0){ v.innerHTML='<video src="'+url+'" controls style="width:100%;max-height:420px;display:block"></video>'; } else if(mime.indexOf("audio/")===0){ v.innerHTML='<audio src="'+url+'" controls style="width:100%"></audio>'; } else if(mime==="application/pdf" || f.name.toLowerCase().slice(-4)===".pdf"){ v.innerHTML='<iframe src="'+url+'#toolbar=0" style="width:100%;height:520px;border:0;background:#0b1220"></iframe>'; } else { v.innerHTML='<iframe src="'+url+'" style="width:100%;min-height:420px;border:0;background:#0b1220"></iframe><div class="muted" style="margin:6px 0 0">Preview may be limited · <a href="'+url+'" download="'+esc(f.name)+'">Download</a></div>'; } } }
+      var qBody=document.getElementById("quiz-body"); var qSubmit=document.getElementById("quiz-submit"); var qScore=document.getElementById("quiz-score");
+      if(!l.quiz || !l.quiz.length){ if(qBody) qBody.innerHTML='<div class="muted">No questions for this lesson.</div>'; if(qSubmit) qSubmit.disabled=true; if(qScore) qScore.textContent=""; }
+      else{
+        if(qSubmit) qSubmit.disabled=false;
+        if(qBody){
+          qBody.innerHTML = l.quiz.map(function(q,qi){
+            if(q.type==="mc"){ var opts=(q.opts||[]).map(function(o,oi){ return '<label><input type="radio" name="q'+qi+'" value="'+oi+'"/> '+esc(o)+'</label>'; }).join(""); return '<div class="q"><div><b>Q'+(qi+1)+'.</b> '+esc(q.q)+'</div><div class="ans-opts">'+opts+'</div></div>'; }
+            if(q.type==="tf"){ return '<div class="q"><div><b>Q'+(qi+1)+'.</b> '+esc(q.q)+'</div><div class="ans-opts"><label><input type="radio" name="q'+qi+'" value="true"/> True</label><label><input type="radio" name="q'+qi+'" value="false"/> False</label></div></div>'; }
+            return '<div class="q"><div><b>Q'+(qi+1)+'.</b> '+esc(q.q)+'</div><div class="ans-opts"><input type="text" name="q'+qi+'" placeholder="Your answer"/></div></div>';
+          }).join("");
+        }
+        if(qScore) qScore.textContent="";
+      }
+    }
+    function gradeQuiz(ev){
+      ev.preventDefault();
+      var l = getLessonById(state.openLessonId); if(!l || !l.quiz || !l.quiz.length) return;
+      var total=0, score=0;
+      for(var qi=0; qi<l.quiz.length; qi++){
+        var q=l.quiz[qi]; var pts=Math.max(1, +(q.points||10) || 10); total+=pts; var correct=false;
+        if(q.type==="mc"){ var r=document.querySelector('input[name="q'+qi+'"]:checked'); var v=r? r.value : null; correct = String(+v)===String(q.correct); }
+        else if(q.type==="tf"){ var r2=document.querySelector('input[name="q'+qi+'"]:checked'); var vv=r2? r2.value : null; correct = ((vv==="true")===!!q.answer); }
+        else{ var t=document.querySelector('input[name="q'+qi+'"]'); var val=t? (t.value||"") : ""; correct = val.trim().toLowerCase() === String(q.answer||"").trim().toLowerCase(); }
+        if(correct) score+=pts;
+      }
+      var qsEl=document.getElementById("quiz-score"); if(qsEl) qsEl.textContent='Score: '+score+' / '+total;
+      l.attempts = l.attempts || []; l.attempts.push({ userId: me.id, score: score, total: total, at: Date.now() });
+      state.lessonScores[me.id] = (state.lessonScores[me.id]||0) + score;
+  notify('You scored '+score+'/'+total+' on "'+l.title+'"');
+      saveState(); saveLessonScores(); recalcUserPoints(); renderNotifications(); renderLeaderboard(); broadcast('LESSON_SCORES_UPDATED', { userId: me.id });
+    }
+
+    // ------- UI -------
+    function rankBadge(rank,pulse){
+      var id=Math.random().toString(36).slice(2,9);
+      return '<div class="'+(pulse?'rank-pulse':'')+'" style="display:inline-flex;align-items:center;gap:8px">'+
+        '<svg width="36" height="36" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 6px 12px '+rank.color+'33)">'+
+          '<defs><radialGradient id="g-'+id+'" cx="30%" cy="20%"><stop offset="0%" stop-color="'+rank.color+'" stop-opacity="1"/><stop offset="70%" stop-color="'+rank.color+'" stop-opacity="0.12"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient></defs>'+
+          '<g><circle cx="24" cy="24" r="18" fill="url(#g-'+id+')"/><circle cx="24" cy="24" r="10" stroke="'+rank.color+'" stroke-width="1.6" fill="none" opacity=".6"/></g>'+
+        '</svg><div style="font-size:13px;color:#dbeafe">'+esc(rank.name)+'</div></div>';
+    }
+    function renderComposerContestOptions(){
+      var sel=$("#composer-contest"); if(!sel) return;
+      var open = state.contests.filter(function(c){return c.status==="open"});
+      sel.innerHTML = '<option value="">— No contest —</option>'+ open.map(function(c){return '<option value="'+c.id+'">'+esc(c.title)+'</option>'}).join("");
+      if(state.selectedContestId){ sel.value=String(state.selectedContestId); }
+    }
+    function renderContestChips(){
+      var el=$("#contest-chips"); if(!el) return;
+      if(!state.contests.length){ el.innerHTML=""; return; }
+      var chips = ['<button class="chip '+(state.activeContestFilter? '' : 'is-active')+'" data-chip="all">All</button>']
+        .concat(state.contests.map(function(c){ return '<button class="chip '+(state.activeContestFilter===c.id?'is-active':'')+'" data-chip="'+c.id+'">'+esc(c.title)+'</button>'; }));
+      el.innerHTML = chips.join("");
+    }
+    function renderFeed(){
+      var feed = $("#feed"); if(!feed) return;
+      var filtered = state.activeContestFilter
+        ? state.posts.filter(function(p){ return (p.contestId===state.activeContestFilter) || (p.type==='contest_announcement' && p.contestId===state.activeContestFilter); })
+        : state.posts.slice();
+
+      var q = (state.searchQuery || "").toString().toLowerCase().trim();
+      if(q){
+        filtered = filtered.filter(function(post){
+          var title = (post.title||"").toString().toLowerCase();
+          var desc  = (post.description||"").toString().toLowerCase();
+          var author = getUserById(post.userId);
+          var authorName = (author && author.name) ? author.name.toString().toLowerCase() : "";
+          return title.indexOf(q) !== -1 || desc.indexOf(q) !== -1 || authorName.indexOf(q) !== -1;
+        });
+      }
+
+      if(!filtered.length){
+        feed.innerHTML = '<div class="muted">No posts match your search.</div>';
+        return;
+      }
+
+  feed.innerHTML = filtered.map(function(post){
+        var author=getUserById(post.userId);
+        var pts=calcPostPoints(post);
+        var rank=getRank(state.usersPoints[post.userId]||0);
+        var pulsing=!!state.levelUps[author.id];
+        var wh = post.imageMeta ? (' width="'+post.imageMeta.width+'" height="'+post.imageMeta.height+'"') : '';
+        var avatarHtml = author.avatarImage ? '<div class="avatar"><img src="'+author.avatarImage+'" alt="'+esc(author.name)+'"></div>' : '<div class="avatar">'+esc(author.avatar||(author.name?author.name[0]:'U'))+'</div>';
+        var contest = post.contestId ? getContestById(post.contestId) : null;
+        var isAnn = post.type==='contest_announcement';
+        return '<article class="post '+(isAnn?'announcement':'')+'" data-post="'+post.id+'">'+
+          '<div class="post-head"><div class="post-user">'+avatarHtml+'<div><div style="display:flex;align-items:center;gap:8px"><div style="font-weight:600">'+esc(author.name)+'</div><div class="post-meta">'+rankBadge(rank,pulsing)+'</div></div><div class="post-meta">'+new Date(post.createdAt).toLocaleString()+'</div></div></div><div class="post-points">'+pts+' pts</div></div>'+
+          '<div class="post-body" data-action="toggle-comments" data-post="'+post.id+'" style="cursor:pointer"><h3 class="post-title">'+esc(post.title)+'</h3><p class="post-desc">'+esc(post.description||"")+'</p>'+
+          (contest? '<div class="contest-badge" data-jump-contest="'+contest.id+'"><span class="dot"></span>🏁 '+esc(contest.title)+'</div>' : '')+
+          (post.image? '<div class="post-img"><img data-action="open-image" data-img="'+post.image+'" alt="'+esc(post.title)+'" src="'+post.image+'"'+wh+' loading="lazy" decoding="async" style="cursor:zoom-in" /></div>':'' )+
+          '</div>'+
+          '<div class="actions"><div class="react-row">'+
+          Object.keys(REACTION_POINTS).map(function(r){ var count=(post.reactions && post.reactions[r]) ? post.reactions[r] : 0; var icon=REACTION_EMOJI[r] || '✨'; return '<button class="react-btn" data-action="react" data-reaction="'+r+'" data-post="'+post.id+'" aria-label="'+r+'"><span class="react-emoji" aria-hidden="true">'+icon+'</span><span class="react-count">'+count+'</span></button>'; }).join("")+
+          '</div><div class="comment-meta"><button class="btn" data-action="toggle-comments" data-post="'+post.id+'">Comments <span class="comment-count">'+(((post.comments&&post.comments.length)||0))+'</span></button><button class="btn pink" data-action="share" data-post="'+post.id+'">Share</button></div></div>'+
+          '<div class="comment-list">'+
+          (function(){
+            var cs = post.comments || [];
+            var isOpen = state.openComments && state.openComments[post.id];
+            // if the post is not expanded, don't render comments or the composer
+            if(!isOpen) return '';
+            // when open, render all comments with replies and the composer
+            return cs.map(function(c){
+              var author = getUserById(c.userId);
+              var cReacts = c.reactions || {};
+              // compute total and top reaction for compact summary button
+              var totalReacts = 0; var topKey = null; var topCount = 0; for(var rk in cReacts){ if(Object.prototype.hasOwnProperty.call(cReacts,rk)){ var cc = cReacts[rk]||0; totalReacts += cc; if(cc>topCount){ topCount=cc; topKey=rk; } } }
+              if(!topKey) topKey = 'like';
+              var topEmoji = REACTION_EMOJI[topKey] || '👍';
+              var reactBtns = '';
+              // compact merged tools: a pill showing top emoji + count (picker target) and an inline reply control
+              var tools = '<div class="comment-tools">' +
+                '<button class="comment-pill" data-action="toggle-comments" data-picker-target="true" data-post="'+post.id+'" data-comment="'+c.id+'" aria-label="comments">' +
+                  '<span class="react-emoji">'+topEmoji+'</span><span class="react-count">'+(totalReacts||0)+'</span>' +
+                '</button>' +
+                '<button class="reply-inline" data-action="reply" data-post="'+post.id+'" data-comment="'+c.id+'">Reply</button>' +
+              '</div>';
+              var repliesHtml = (c.replies||[]).map(function(rep){ var ra = rep.reactions||{}; var totalR=0; var topR=null; var topRC=0; for(var rk2 in ra){ if(Object.prototype.hasOwnProperty.call(ra,rk2)){ var v=ra[rk2]||0; totalR+=v; if(v>topRC){ topRC=v; topR=rk2; } } } if(!topR) topR='like'; var repEmoji = REACTION_EMOJI[topR]||'👍'; return '<div class="comment-item" data-reply-id="'+rep.id+'"><div class="comment-head"><div class="author">'+esc(getUserById(rep.userId).name)+'</div><div class="text">'+esc(rep.text)+'</div></div><div class="comment-actions">'+ '<button class="react-btn" data-action="react-comment" data-post="'+post.id+'" data-comment="'+c.id+'" data-reply="'+rep.id+'">'+ '<span class="react-emoji">'+repEmoji+'</span><span class="react-count">'+(totalR||0)+'</span></button>'+' </div></div>'; }).join("");
+              return '<div class="comment-item" data-comment-id="'+c.id+'">'+
+                '<div class="comment-head"><div class="author">'+esc(author.name)+'</div><div class="text">'+esc(c.text)+'</div></div>'+
+                '<div class="comment-actions">'+tools+'</div>'+
+                '<div class="comment-replies">'+repliesHtml+'</div>'+
+              '</div>';
+            }).join("") + '<div class="composer-actions" style="margin-top:8px"><input data-post="'+post.id+'" placeholder="Write a comment..." style="flex:1;background:transparent;border:0;border-bottom:1px solid #0f1724;color:#fff;font-size:14px;outline:none" />'+
+            '<button class="btn gradient" data-action="comment" data-post="'+post.id+'">Send</button></div>';
+          })()+
+          '</div>'+
+        '</article>';
+      }).join("");
+    }
+    function renderLeaderboard(){
+      var entries=[], id;
+      for(id in state.usersPoints){ if(Object.prototype.hasOwnProperty.call(state.usersPoints,id)){ var pts=state.usersPoints[id]; var user=null; var all=sampleUsers.slice(); all.push(me); for(var i=0;i<all.length;i++){ if(all[i].id===+id){ user=all[i]; break; } } if(!user) user={id:+id,name:"Guest"}; entries.push({user:user,pts:pts}); } }
+      entries.sort(function(a,b){ return (b.pts - a.pts) || a.user.name.localeCompare(b.user.name); });
+      var lb=$("#leaderboard"); if(lb){
+        lb.innerHTML = entries.slice(0,5).map(function(e,i){
+          var r=getRank(e.pts);
+          var pos = i+1;
+          var medal = pos===1? '🥇' : pos===2? '🥈' : pos===3? '🥉' : '';
+          var av = e.user.avatarImage ? '<div class="lb-avatar"><img src="'+e.user.avatarImage+'" alt="'+esc(e.user.name)+'"/></div>' : '<div class="lb-avatar">'+esc(e.user.avatar||(e.user.name?e.user.name[0]:"?"))+'</div>';
+          var pts = Math.round((e.pts+Number.EPSILON)*10)/10;
+          return '<li>'+
+            '<div class="lb-left">'+av+'<div class="lb-user"><div class="name">'+esc(e.user.name)+'</div><div class="rank">'+r.icon+' · '+esc(r.name)+'</div></div></div>'+
+            '<div class="leader-right">'+
+              '<div class="leader-points">'+pts+' pts</div>'+
+              '<div class="leader-pos">'+(medal || ('#'+pos))+'</div>'+
+            '</div>'+
+          '</li>';
+        }).join("");
+      }
+    }
+    function renderContests(){
+      var wrap=$("#contests"); if(!wrap) return;
+      if(!state.contests.length){ wrap.innerHTML='<div class="notif" style="background:#081026">No active contests. Create one to engage designers!</div>'; return; }
+      wrap.innerHTML = state.contests.map(function(c){
+        return '<div class="contest-card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="font-weight:600">'+esc(c.title)+'</div><span class="muted">'+(c.status==='open'?'Open':'Closed')+'</span></div><div class="post-meta">Prize: '+esc(c.prize)+'</div><div class="post-meta">Entries: '+(((c.entries&&c.entries.length)||0))+'</div><div class="mgr-row" style="margin-top:8px"><button class="btn ghost" data-view-contest="'+c.id+'">View entries</button></div></div>';
+      }).join("");
+    }
+    function renderContestManagerList(){
+      var box=$("#cm-list"); if(!box) return;
+      if(!state.contests.length){ box.innerHTML='<div class="contest-card">No contests yet.</div>'; return; }
+      box.innerHTML = state.contests.map(function(c){
+        return '<div class="contest-card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><strong>'+esc(c.title)+'</strong> <span class="muted">· '+esc(c.prize)+'</span></div><span class="muted">'+(c.status==='open'?'Open':'Closed')+'</span></div>'+
+        (c.description? '<div class="muted" style="margin-top:4px">'+esc(c.description)+'</div>' : '')+
+        '<div class="muted" style="margin-top:4px">Entries: '+(((c.entries&&c.entries.length)||0))+'</div>'+
+        '<div class="mgr-row" style="margin-top:8px"><button class="btn ghost" data-mgr-view="'+c.id+'">View entries</button><button class="btn ghost" data-mgr-toggle="'+c.id+'">'+(c.status==='open'?'Close':'Open')+'</button><button class="btn pink" '+(c.announced?'disabled':'')+' data-mgr-announce="'+c.id+'">'+(c.announced?'Announced':'Announce')+'</button></div></div>';
+      }).join("");
+    }
+    function timeAgo(ts){ if(!ts) return ''; var diff = Math.floor((Date.now() - ts)/1000); if(diff<60) return diff+'s'; if(diff<3600) return Math.floor(diff/60)+'m'; if(diff<86400) return Math.floor(diff/3600)+'h'; return Math.floor(diff/86400)+'d'; }
+    function renderNotifications(){
+      var box=$("#notifications"); if(!box) return;
+      if(!state.notifications || !state.notifications.length){ box.innerHTML='<div class="muted">No notifications yet</div>'; // hide unread badge
+        var ub = document.getElementById('notif-unread'); if(ub) ub.style.display='none'; return; }
+      // compute unread count
+      var unread = 0; for(var i=0;i<state.notifications.length;i++){ if(!state.notifications[i].read) unread++; }
+      var ub2 = document.getElementById('notif-unread'); if(ub2){ ub2.style.display = (unread>0)? 'inline-flex' : 'none'; var uc = document.getElementById('notif-unread-count'); if(uc) uc.textContent = unread; }
+
+      box.innerHTML = state.notifications.map(function(n){
+        var isUnread = !n.read;
+        var t = n.time? timeAgo(n.time) : '';
+        // try to guess type for small badge
+        var type = 'Info'; if(/contest/i.test(n.text)) type='Contest'; else if(/lesson|scor/i.test(n.text)) type='Lesson'; else if(/react|published|post|link/i.test(n.text)) type='Activity';
+        return '<div class="notif-item '+(isUnread? 'unread':'')+'" data-notif-id="'+n.id+'">'
+          + '<div class="notif-left">'
+            + '<div class="notif-icon" aria-hidden="true">'+(type==='Contest'? '🏁' : type==='Lesson'? '📘' : '🔔')+'</div>'
+            + '<div class="notif-body">'
+              + '<div style="display:flex;align-items:center;gap:8px"><div class="notif-type">'+esc(type)+'</div><div class="notif-text">'+esc(n.text)+'</div></div>'
+              + (t? '<div class="notif-meta">'+esc(t)+' · '+(n.time? new Date(n.time).toLocaleString() : '')+'</div>' : '')
+            + '</div>'
+          + '</div>'
+          + '<div class="notif-actions">'
+            + '<button class="notif-mark" data-notif-mark="'+n.id+'" title="Mark read">✓</button>'
+            + '<button class="notif-dismiss" data-notif-dismiss="'+n.id+'" title="Dismiss">✕</button>'
+          + '</div>'
+        + '</div>';
+      }).join("");
+    }
+
+    // Play a short notification sound using Web Audio API (no external asset)
+    function playNotificationSound(){
+      try{
+        var C = window.AudioContext || window.webkitAudioContext;
+        if(!C) return;
+        var ctx = new C();
+        var o = ctx.createOscillator(); var g = ctx.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime);
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        // quick attack to 0.12 then fall
+        g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+        o.frequency.linearRampToValueAtTime(1320, ctx.currentTime + 0.12);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
+        o.stop(ctx.currentTime + 0.32);
+        // close context after a small delay to release resources
+        setTimeout(function(){ try{ ctx.close(); }catch(e){} }, 800);
+      }catch(e){}
+    }
+
+    // Centralized helper to add a notification + play sound
+    function notify(text, opts){ opts = opts || {}; var n = { id:Date.now()+Math.random(), text: String(text||""), time: (opts.time||Date.now()), read: false }; state.notifications.unshift(n); try{ playNotificationSound(); }catch(e){} saveState(); renderNotifications(); }
+
+    function markNotificationRead(id){ for(var i=0;i<state.notifications.length;i++){ if(state.notifications[i].id===id){ state.notifications[i].read = true; break; } } saveState(); renderNotifications(); }
+    function dismissNotification(id){ for(var i=0;i<state.notifications.length;i++){ if(state.notifications[i].id===id){ state.notifications.splice(i,1); break; } } saveState(); renderNotifications(); }
+    function markAllNotificationsRead(){ for(var i=0;i<state.notifications.length;i++){ state.notifications[i].read = true; } saveState(); renderNotifications(); }
+    function render(){
+      var isLessons = state.activeTab==="lessons";
+      var cm=document.getElementById("contest-manager"); if(cm) cm.classList.toggle("hidden", state.activeTab!=="contests");
+      var ls=document.getElementById("lessons-section"); if(ls) ls.classList.toggle("hidden", !isLessons);
+      var comp=document.getElementById("composer"); if(comp) comp.classList.toggle("hidden", isLessons);
+      var chips=document.getElementById("contest-chips"); if(chips) chips.classList.toggle("hidden", isLessons);
+      var feed=document.getElementById("feed"); if(feed) feed.classList.toggle("hidden", isLessons);
+      renderComposerContestOptions(); renderContestChips(); renderFeed(); renderLeaderboard(); renderContests(); renderContestManagerList(); renderNotifications();
+      renderLessonsList(); renderLessonsSide(); renderLessonViewer();
+      $$(".tab").forEach(function(b){ if(b.tagName!=='A') b.classList.toggle("is-active", b.dataset.tab===state.activeTab); });
+  var tgl=document.getElementById("ls-teacher-toggle"); if(tgl) tgl.checked=!!state.teacherMode; var cr=document.getElementById("ls-creator"); if(cr) cr.classList.toggle("hidden", !state.teacherMode);
+  // role-based UI: hide/disable create controls for non-teachers
+  try{ var _auth = JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); var _authRole = _auth && _auth.role; }catch(e){ var _authRole = null; }
+  var isTeacher = (_authRole === 'teacher') || (state.role === 'teacher') || !!state.teacherMode;
+  var createContestBtn = document.getElementById('create-contest'); if(createContestBtn) createContestBtn.classList.toggle('hidden', !isTeacher);
+  var cmCreateBtn = document.getElementById('cm-create'); if(cmCreateBtn) cmCreateBtn.classList.toggle('hidden', !isTeacher);
+  var contestNewBtn = document.getElementById('contest-new-btn'); if(contestNewBtn) contestNewBtn.classList.toggle('hidden', !isTeacher);
+  var cqCreateBtn = document.getElementById('cq-create'); if(cqCreateBtn) cqCreateBtn.classList.toggle('hidden', !isTeacher);
+  var lsCreateBtn = document.getElementById('ls-create'); if(lsCreateBtn) lsCreateBtn.classList.toggle('hidden', !isTeacher);
+  // hide the teacher toggle for students (role comes from login)
+  var lsToggleLabel = document.getElementById('ls-teacher-toggle'); if(lsToggleLabel && lsToggleLabel.parentElement){ lsToggleLabel.parentElement.style.display = isTeacher ? '' : 'none'; }
+  // show Users button to teachers
+  var usersBtnEl = document.getElementById('users-btn'); if(usersBtnEl) usersBtnEl.style.display = isTeacher ? '' : 'none';
+    }
+
+    // ------- Actions -------
+    function handleReact(postId,reaction,btnEl){
+      var i=-1;
+      for(var j=0;j<state.posts.length;j++){ if(state.posts[j].id===postId){ i=j; break; } }
+      if(i<0) return;
+      var p=state.posts[i]; var reactions=Object.assign({}, (p.reactions||{})); reactions[reaction]=(reactions[reaction]||0)+1;
+      state.posts[i]=Object.assign({}, p, {reactions:reactions});
+  notify(me.name+' reacted '+reaction+' to "'+p.title+'"');
+
+      // UI animations: button bump, emoji pop, count bump, floating emoji, and post points pulse
+      if(btnEl){
+        try{
+          // button bump (existing)
+          btnEl.classList.remove('bump'); void btnEl.offsetWidth; btnEl.classList.add('bump');
+
+          // emoji pop
+          var emojiEl = btnEl.querySelector && btnEl.querySelector('.react-emoji');
+          if(emojiEl){ emojiEl.classList.remove('pop'); void emojiEl.offsetWidth; emojiEl.classList.add('pop'); window.setTimeout(function(){ try{ emojiEl.classList.remove('pop'); }catch(e){} }, 520); }
+
+          // count bump
+          var countEl = btnEl.querySelector && btnEl.querySelector('.react-count');
+          if(countEl){ countEl.classList.remove('bump'); void countEl.offsetWidth; countEl.classList.add('bump'); window.setTimeout(function(){ try{ countEl.classList.remove('bump'); }catch(e){} }, 420); }
+
+          // floating emoji overlay so animation survives render
+          var rect = btnEl.getBoundingClientRect();
+          var f = document.createElement('div'); f.className = 'float-emoji'; f.textContent = (REACTION_EMOJI[reaction] || '✨');
+          // position roughly centered above the button
+          f.style.left = (rect.left + rect.width/2) + 'px';
+          f.style.top = (rect.top - 8) + 'px';
+          document.body.appendChild(f);
+          // trigger animation
+          window.setTimeout(function(){ try{ f.classList.add('animate'); }catch(e){} }, 10);
+          window.setTimeout(function(){ try{ document.body.removeChild(f); }catch(e){} }, 980);
+
+          // pulse the post points display briefly
+          var art = btnEl.closest && btnEl.closest('article');
+          if(art){ var pp = art.querySelector && art.querySelector('.post-points'); if(pp){ pp.classList.remove('pulse'); void pp.offsetWidth; pp.classList.add('pulse'); window.setTimeout(function(){ try{ pp.classList.remove('pulse'); }catch(e){} }, 920); } }
+        }catch(err){}
+      }
+
+      // update points and persist; delay render slightly so animations are visible
+      recalcUserPoints(); saveState(); window.setTimeout(function(){ render(); broadcast('POSTS_UPDATED', null); }, 160);
+    }
+    function handleComment(postId,text){
+      var t=(text||"").trim(); if(!t) return;
+      var i=-1; for(var j=0;j<state.posts.length;j++){ if(state.posts[j].id===postId){ i=j; break; } } if(i<0) return;
+      var p=state.posts[i]; var comments=(p.comments||[]).slice();
+      // normalize comment shape: {id,userId,text,replies:[],reactions:{}}
+      var c = { id:Date.now(), userId:me.id, text:t, replies:[], reactions:{} };
+      comments.push(c);
+      state.posts[i]=Object.assign({}, p, {comments:comments}); saveState(); render();
+    }
+
+    function handleCommentReply(postId, commentId, text){
+      var t=(text||"").trim(); if(!t) return;
+      var pIdx=-1; for(var j=0;j<state.posts.length;j++){ if(state.posts[j].id===postId){ pIdx=j; break; } } if(pIdx<0) return;
+      var post = state.posts[pIdx]; var comments = post.comments || [];
+      for(var k=0;k<comments.length;k++){
+        if(comments[k].id===commentId){
+          comments[k].replies = comments[k].replies || [];
+          comments[k].replies.push({ id: Date.now(), userId: me.id, text: t, reactions: {} });
+          break;
+        }
+      }
+      state.posts[pIdx] = Object.assign({}, post, { comments: comments }); saveState(); render();
+    }
+
+    function handleCommentReact(postId, commentId, reaction, replyId, btnEl){
+      var pIdx=-1; for(var j=0;j<state.posts.length;j++){ if(state.posts[j].id===postId){ pIdx=j; break; } } if(pIdx<0) return;
+      var post = state.posts[pIdx]; var comments = post.comments || [];
+      for(var k=0;k<comments.length;k++){
+        if(comments[k].id===commentId){
+          if(replyId){ // react to a reply
+            var reps = comments[k].replies || [];
+            for(var r=0;r<reps.length;r++){
+              if(reps[r].id===replyId){ reps[r].reactions = reps[r].reactions || {}; reps[r].reactions[reaction] = (reps[r].reactions[reaction]||0)+1; break; }
+            }
+          } else { // react to comment
+            comments[k].reactions = comments[k].reactions || {}; comments[k].reactions[reaction] = (comments[k].reactions[reaction]||0)+1;
+          }
+          break;
+        }
+      }
+      state.posts[pIdx] = Object.assign({}, post, { comments: comments });
+
+      // Animations for comment reaction similar to post reactions
+      if(btnEl){
+        try{
+          // button bump
+          btnEl.classList.remove('bump'); void btnEl.offsetWidth; btnEl.classList.add('bump');
+          // emoji pop
+          var emojiEl = btnEl.querySelector && btnEl.querySelector('.react-emoji');
+          if(emojiEl){ emojiEl.classList.remove('pop'); void emojiEl.offsetWidth; emojiEl.classList.add('pop'); window.setTimeout(function(){ try{ emojiEl.classList.remove('pop'); }catch(e){} }, 520); }
+          // count bump
+          var countEl = btnEl.querySelector && btnEl.querySelector('.react-count');
+          if(countEl){ countEl.classList.remove('bump'); void countEl.offsetWidth; countEl.classList.add('bump'); window.setTimeout(function(){ try{ countEl.classList.remove('bump'); }catch(e){} }, 420); }
+          // floating emoji overlay
+          var rect = btnEl.getBoundingClientRect();
+          var f = document.createElement('div'); f.className = 'float-emoji'; f.textContent = (REACTION_EMOJI[reaction] || '✨');
+          f.style.left = (rect.left + rect.width/2) + 'px'; f.style.top = (rect.top - 8) + 'px'; document.body.appendChild(f);
+          window.setTimeout(function(){ try{ f.classList.add('animate'); }catch(e){} }, 10);
+          window.setTimeout(function(){ try{ document.body.removeChild(f); }catch(e){} }, 980);
+          // pulse parent comment
+          var cItem = btnEl.closest && btnEl.closest('.comment-item'); if(cItem){ cItem.classList.remove('pulse'); void cItem.offsetWidth; cItem.classList.add('pulse'); window.setTimeout(function(){ try{ cItem.classList.remove('pulse'); }catch(e){} }, 920); }
+        }catch(err){}
+      }
+
+      saveState(); // delay render slightly so animation visible
+      window.setTimeout(function(){ render(); }, 160);
+    }
+    // Reaction picker state and helpers
+    var reactionPickerEl = null, reactionPickerTimer = null, reactionLongPressTimer = null, reactionPickerTarget = null;
+    function createReactionPicker(){
+      var el = document.createElement('div'); el.className = 'reaction-picker';
+      Object.keys(REACTION_EMOJI).forEach(function(r){ var btn=document.createElement('button'); btn.type='button'; btn.setAttribute('data-reaction', r); btn.innerHTML = REACTION_EMOJI[r]; btn.addEventListener('click', function(ev){ ev.stopPropagation(); if(!reactionPickerTarget) return; var btnTarget = reactionPickerTarget; var pid = +btnTarget.dataset.post; var cid = +btnTarget.dataset.comment; var replyId = btnTarget.dataset.reply ? (+btnTarget.dataset.reply) : null; handleCommentReact(pid, cid, r, replyId, btnTarget); hideReactionPicker(); }); el.appendChild(btn); });
+      document.body.appendChild(el); reactionPickerEl = el; return el;
+    }
+    function showReactionPickerFor(btnEl){
+      if(!btnEl) return; reactionPickerTarget = btnEl;
+      if(!reactionPickerEl) createReactionPicker();
+      var rect = btnEl.getBoundingClientRect(); var el = reactionPickerEl;
+      // position above the button, centered
+      var left = rect.left + rect.width/2 - (el.offsetWidth/2);
+      // if offsetWidth is zero (not in DOM flow), approximate using buttons count
+      if(!el.offsetWidth){ left = rect.left + rect.width/2 - (Object.keys(REACTION_EMOJI).length*22); }
+      var top = rect.top - 44; // above the button
+      el.style.left = Math.max(8, left) + 'px'; el.style.top = Math.max(8, top) + 'px';
+      // show with animation class
+      setTimeout(function(){ el.classList.add('show'); }, 8);
+      // hide on outside click
+      setTimeout(function(){ document.addEventListener('click', outsideClickHandler); }, 40);
+    }
+    function hideReactionPicker(){ if(!reactionPickerEl) return; reactionPickerEl.classList.remove('show'); reactionPickerTarget = null; document.removeEventListener('click', outsideClickHandler); }
+    function outsideClickHandler(e){ if(!reactionPickerEl) return; if(!reactionPickerEl.contains(e.target)) hideReactionPicker(); }
+
+    // Lightbox (full-size image preview)
+    var lightboxEl = null, lightboxImg = null;
+    function createLightbox(){ var el=document.createElement('div'); el.className='lightbox'; el.innerHTML = '<div class="close-hint">Press Esc or click outside to close</div><img alt="preview"/><div>'; document.body.appendChild(el); lightboxEl = el; lightboxImg = el.querySelector('img');
+      el.addEventListener('click', function(ev){ if(ev.target===el || ev.target===el.querySelector('.close-hint')) closeLightbox(); });
+      return el; }
+    function openLightbox(src){ if(!src) return; if(!lightboxEl) createLightbox(); lightboxImg.src = src; lightboxEl.classList.add('show'); }
+    function closeLightbox(){ if(!lightboxEl) return; lightboxEl.classList.remove('show'); lightboxImg.src=''; }
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ closeLightbox(); } });
+    function publishPost(){
+      var title=(document.getElementById("composer-title").value||"").trim(); var description=(document.getElementById("composer-desc").value||"").trim();
+      if(!title && !state.previewDataUrl) return;
+      var newPost={ id:Date.now(), userId:me.id, title:(title||"Untitled"), description:description, image:state.previewDataUrl, imageMeta: (state.previewMeta || null), reactions:{}, comments:[], createdAt:Date.now() };
+      var sel=document.getElementById("composer-contest"); var selVal = sel? sel.value : ""; if(selVal){ newPost.contestId = +selVal; }
+  state.posts.unshift(newPost); notify("You published a new post!");
+      document.getElementById("composer-title").value=""; document.getElementById("composer-desc").value=""; state.previewDataUrl=null; state.previewMeta=null; document.getElementById("composer-preview-wrap").classList.add("hidden"); document.getElementById("composer-preview").src="";
+      if(newPost.contestId) joinContest(newPost.contestId, newPost.id);
+      recalcUserPoints(); saveState(); render(); broadcast('POSTS_UPDATED', null);
+      setTimeout(function(){ var el = document.querySelector('article.post[data-post="'+newPost.id+'"]'); if(el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"center" }); },0);
+    }
+
+    // ------- Sync -------
+    function setupSync(){
+      if(bus){
+        bus.onmessage = function(ev){
+          var d=ev.data||{}; var type=d.type, payload=d.payload;
+          if(type==='ME_UPDATED'){ loadMe(); render(); }
+          else if(type==='BG_UPDATED'){ var url=payload && payload.dataUrl; if(url) applyBackground(url,{persist:false}); else resetBackground(); }
+          else if(type==='POSTS_UPDATED'){ try{ var p=JSON.parse(localStorage.getItem(LOCAL_KEYS.POSTS)||"null"); if(Array.isArray(p)){ state.posts=p; recalcUserPoints(true); render(); } }catch(e){} }
+          else if(type==='CONTESTS_UPDATED'){ try{ var c=JSON.parse(localStorage.getItem(LOCAL_KEYS.CONTESTS)||"null"); if(Array.isArray(c)){ state.contests=c; render(); } }catch(e){} }
+          else if(type==='LESSONS_UPDATED'){ try{ var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null"); if(Array.isArray(l)){ state.lessons=l; renderLessonsList(); renderLessonsSide(); } }catch(e){} }
+          else if(type==='LESSON_SCORES_UPDATED'){ try{ var s=JSON.parse(localStorage.getItem(LOCAL_KEYS.LPOINTS)||"null"); if(s && typeof s==='object'){ state.lessonScores=s; recalcUserPoints(true); renderLeaderboard(); } }catch(e){} }
+          else if(type==='AUTH_CHANGED'){ if(!(payload && payload.loggedIn)){ window.location.href='login.html'; } }
+        };
+      }
+      window.addEventListener('storage', function(e){
+        try{
+          if(e.key===LOCAL_KEYS.AUTH){ var a=JSON.parse(e.newValue||"null"); if(!(a && a.loggedIn)) { window.location.href='login.html'; } else { if(a && a.role){ state.role = a.role; state.teacherMode = (a.role==='teacher'); applyMeToUI(); render(); } } }
+          if(e.key===LOCAL_KEYS.USERS){ try{ if(document.getElementById('users-panel') && document.getElementById('users-panel').classList.contains('show')){ renderUsersPanel(); } }catch(err){} }
+          if(e.key===LOCAL_KEYS.ME && e.newValue){ var m=JSON.parse(e.newValue||"null"); if(m && m.id){ for(var k in m){ if(Object.prototype.hasOwnProperty.call(m,k)) me[k]=m[k]; } applyMeToUI(); render(); } }
+          if(e.key===LOCAL_KEYS.BG){ var bg=e.newValue?JSON.parse(e.newValue):null; if(bg && bg.dataUrl) applyBackground(bg.dataUrl,{persist:false}); else resetBackground(); }
+          if(e.key===LOCAL_KEYS.POSTS){ var p=JSON.parse(e.newValue||"null"); if(Array.isArray(p)){ state.posts=p; recalcUserPoints(true); render(); } }
+          if(e.key===LOCAL_KEYS.CONTESTS){ var c=JSON.parse(e.newValue||"null"); if(Array.isArray(c)){ state.contests=c; render(); } }
+          if(e.key===LOCAL_KEYS.LESSONS){ var l=JSON.parse(e.newValue||"null"); if(Array.isArray(l)){ state.lessons=l; renderLessonsList(); renderLessonsSide(); } }
+          if(e.key===LOCAL_KEYS.LPOINTS){ var s=JSON.parse(e.newValue||"null"); if(s && typeof s==='object'){ state.lessonScores=s; recalcUserPoints(true); renderLeaderboard(); } }
+        }catch(err){}
+      });
+    }
+
+    // ------- Events / Boot -------
+    function wire(){
+      if(!ensureAuthOrRedirect()) return;
+      var composerEl=$("#composer");
+      function focus(){ if(composerEl){ composerEl.classList.add("composer--focused"); if(composerEl.scrollIntoView) composerEl.scrollIntoView({behavior:"smooth", block:"center"}); } }
+      function blur(){ if(composerEl) composerEl.classList.remove("composer--focused"); }
+      $$(".tab").forEach(function(b){
+        if(b.tagName==="A") return;
+        b.addEventListener("click", function(){
+          state.activeTab=b.dataset.tab; render();
+          if(state.activeTab==="contests"){ var m=document.getElementById("contest-manager"); if(m && m.scrollIntoView) m.scrollIntoView({behavior:"smooth",block:"start"}); }
+          if(state.activeTab==="lessons"){ var ls=document.getElementById("lessons-section"); if(ls && ls.scrollIntoView) ls.scrollIntoView({behavior:"smooth",block:"start"}); }
+        });
+      });
+    var bgFile=document.getElementById("bg-file"); if(bgFile){ bgFile.addEventListener("change", function(e){ var f=e.target.files && e.target.files[0]; if(!f) return; // show filename in the pill
+      try{ var label = bgFile.closest && bgFile.closest('.file-picker'); if(label){ var fn = label.querySelector('.file-name'); if(fn) fn.textContent = f.name; } }catch(err){}
+      var reader=new FileReader(); reader.onload=function(){ applyBackground(reader.result,{persist:true}); broadcast('BG_UPDATED',{dataUrl:reader.result}); };
+      reader.readAsDataURL(f);
+    }); }
+    var bgReset=document.getElementById("bg-reset"); if(bgReset){ bgReset.addEventListener("click", function(){ resetBackground(); broadcast('BG_UPDATED',{dataUrl:null}); try{ var label = document.querySelector('.file-picker'); if(label){ var fn = label.querySelector('.file-name'); if(fn) fn.textContent = 'No file chosen'; } }catch(err){} }); }
+      var ct=document.getElementById("composer-title"), cd=document.getElementById("composer-desc");
+      if(ct){ ct.addEventListener("focus",focus); ct.addEventListener("blur",blur); }
+      if(cd){ cd.addEventListener("focus",focus); cd.addEventListener("blur",blur); }
+      var cfile=document.getElementById("composer-file"); if(cfile){ cfile.addEventListener("change", function(e){ var f=e.target.files && e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(){ var url=reader.result; state.previewDataUrl=url; var img=new Image(); img.onload=function(){ state.previewMeta={width:img.naturalWidth,height:img.naturalHeight}; var el=document.getElementById("composer-preview"); if(el){ el.src=url; el.setAttribute("width",state.previewMeta.width); el.setAttribute("height",state.previewMeta.height); } var wrap=document.getElementById("composer-preview-wrap"); if(wrap) wrap.classList.remove("hidden"); focus(); }; img.src=url; }; reader.readAsDataURL(f); }); }
+      var pb=document.getElementById("publish-btn"); if(pb) pb.addEventListener("click", publishPost);
+      var newBtn=document.getElementById("contest-new-btn"); if(newBtn){ newBtn.addEventListener("click", function(){ var el=document.getElementById("contest-quick"); if(el) el.classList.remove("hidden"); }); }
+      var cqCancel=document.getElementById("cq-cancel"); if(cqCancel){ cqCancel.addEventListener("click", function(){ var el=document.getElementById("contest-quick"); if(el) el.classList.add("hidden"); }); }
+  var cqCreate=document.getElementById("cq-create"); if(cqCreate){ cqCreate.addEventListener("click", function(){ var title=(document.getElementById("cq-title").value||"").trim(); var prize=(document.getElementById("cq-prize").value||"").trim(); var announce=document.getElementById("cq-announce").checked; if(!title){ alert("Contest title is required"); return; } var c=createContest({title:title, prize:prize, description:"", announce:announce}); if(!c){ return; } state.selectedContestId=c.id; var quick=document.getElementById("contest-quick"); if(quick) quick.classList.add("hidden"); var sel=document.getElementById("composer-contest"); if(sel) sel.value=String(c.id); }); }
+      var cmCreate=document.getElementById("cm-create"); if(cmCreate){ cmCreate.addEventListener("click", function(){ var t=(document.getElementById("cm-title").value||"").trim(); var p=(document.getElementById("cm-prize").value||"").trim(); var d=(document.getElementById("cm-desc").value||"").trim(); var a=document.getElementById("cm-announce").checked; if(!t){ alert("Title is required"); return; } createContest({title:t, prize:p, description:d, announce:a}); document.getElementById("cm-title").value=""; document.getElementById("cm-prize").value=""; document.getElementById("cm-desc").value=""; document.getElementById("cm-announce").checked=true; }); }
+      var cmgr=document.getElementById("contest-manager"); if(cmgr){ cmgr.addEventListener("click", function(e){ var v=e.target.closest && e.target.closest("[data-mgr-view]"); var tog=e.target.closest && e.target.closest("[data-mgr-toggle]"); var ann=e.target.closest && e.target.closest("[data-mgr-announce]"); if(v){ state.activeTab="home"; render(); state.activeContestFilter=+v.dataset.mgrView; renderContestChips(); renderFeed(); } if(tog){ toggleContestStatus(+tog.dataset.mgrToggle); } if(ann){ var id=+ann.dataset.mgrAnnounce; var c=getContestById(id); if(c){ announceContestPost(c); c.announced=true; saveState(); renderContestManagerList(); } } }); }
+      var chips=document.getElementById("contest-chips"); if(chips){ chips.addEventListener("click", function(e){ var b=e.target.closest && e.target.closest(".chip"); if(!b) return; var v=b.dataset.chip; state.activeContestFilter = (v==="all") ? null : +v; renderContestChips(); renderFeed(); }); }
+      var contSide=document.getElementById("contests"); if(contSide){ contSide.addEventListener("click", function(e){ var b=e.target.closest && e.target.closest("[data-view-contest]"); if(!b) return; state.activeTab="home"; render(); state.activeContestFilter = +b.dataset.viewContest; renderContestChips(); renderFeed(); }); }
+      var feed=document.getElementById("feed"); if(feed){ feed.addEventListener("click", function(e){ var btn=e.target.closest && e.target.closest("[data-action]"); if(btn){ var action=btn.dataset.action;
+            if(action==="react"){
+            var id = +btn.dataset.post;
+            handleReact(id, btn.dataset.reaction, btn);
+          } else if(action==="open-image"){
+            var src = btn.dataset.img || btn.getAttribute('src'); if(src) openLightbox(src);
+          } else if(action==="react-comment"){
+            var pid = +btn.dataset.post; var cid = +btn.dataset.comment; var replyId = btn.dataset.reply ? (+btn.dataset.reply) : null; handleCommentReact(pid, cid, btn.dataset.reaction, replyId, btn);
+          } else if(action==="toggle-comments"){
+            var pid = +btn.dataset.post;
+            state.openComments[pid] = !state.openComments[pid]; renderFeed();
+            if(state.openComments[pid]){ var art = document.querySelector('article.post[data-post="'+pid+'"]'); if(art && art.scrollIntoView) art.scrollIntoView({behavior:'smooth', block:'center'}); }
+          } else if(action==="comment"){ var id=+btn.dataset.post; var wrap=btn.closest(".composer-actions"); var input=wrap? wrap.querySelector("input") : null; var val=input? input.value : ""; if(input && input.dataset && input.dataset.replyTo){ var replyTo = +input.dataset.replyTo; handleCommentReply(id, replyTo, val); input.dataset.replyTo = ""; } else { handleComment(id, val); } if(input) input.value=""; }
+          else if(action==="reply"){ var pid = +btn.dataset.post; var cid = +btn.dataset.comment; var author = getUserById((function(){ var p=state.posts.filter(function(x){return x.id===pid;})[0]; var cs = p && p.comments? p.comments : []; for(var i=0;i<cs.length;i++){ if(cs[i].id===cid) return cs[i].userId; } return null; })()); var authName = author? (author.name||'') : ''; var inputEl = document.querySelector('.composer-actions input[data-post="'+pid+'"]'); if(inputEl){ inputEl.value = '@'+authName+' '; inputEl.focus(); inputEl.dataset.replyTo = cid; } }
+          else if(action==="share"){ var id=+btn.dataset.post; if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(location.href).catch(function(){}); notify("Post link copied to clipboard"); renderNotifications(); saveState(); }
+        }
+        var jump=e.target.closest && e.target.closest("[data-jump-contest]"); if(jump){ state.activeContestFilter=+jump.dataset.jumpContest; renderContestChips(); renderFeed(); }
+      }); }
+      // Notifications actions (mark read / dismiss / mark all)
+      var notifsEl = document.getElementById('notifications'); if(notifsEl){ notifsEl.addEventListener('click', function(e){ var mark = e.target.closest && e.target.closest('[data-notif-mark]'); var dis = e.target.closest && e.target.closest('[data-notif-dismiss]'); var item = e.target.closest && e.target.closest('[data-notif-id]'); if(mark){ var id = +mark.dataset.notifMark; markNotificationRead(id); } else if(dis){ var id = +dis.dataset.notifDismiss; dismissNotification(id); } else if(item){ var id = +item.dataset.notifId; markNotificationRead(id); } }); }
+      var markAllBtn = document.getElementById('notif-mark-all'); if(markAllBtn){ markAllBtn.addEventListener('click', function(){ markAllNotificationsRead(); }); }
+      // Hover / long-press behaviour for comment reaction buttons to show a reaction picker (Facebook-like)
+      if(feed){
+        var hoverTimer = null, longPressTimer = null;
+        // use data-picker-target to identify elements that should show the picker on hover/long-press
+        feed.addEventListener('pointerover', function(e){ var b = e.target.closest && e.target.closest('[data-picker-target]'); if(!b) return; clearTimeout(hoverTimer); hoverTimer = setTimeout(function(){ showReactionPickerFor(b); }, 350); });
+        feed.addEventListener('pointerout', function(e){ var b = e.target.closest && e.target.closest('[data-picker-target]'); if(!b) return; clearTimeout(hoverTimer); setTimeout(function(){ if(reactionPickerTarget && reactionPickerTarget!==b){ hideReactionPicker(); } }, 10); });
+        feed.addEventListener('pointerdown', function(e){ var b = e.target.closest && e.target.closest('[data-picker-target]'); if(!b) return; clearTimeout(longPressTimer); longPressTimer = setTimeout(function(){ showReactionPickerFor(b); }, 600); });
+        document.addEventListener('pointerup', function(e){ clearTimeout(longPressTimer); });
+        // hide picker on scroll/resize to avoid misplacement
+        window.addEventListener('scroll', function(){ hideReactionPicker(); }, true);
+        window.addEventListener('resize', function(){ hideReactionPicker(); });
+      }
+      var ltt=document.getElementById("ls-teacher-toggle"); if(ltt){ ltt.addEventListener("change", function(e){ state.teacherMode = !!e.target.checked; try{ localStorage.setItem(LOCAL_KEYS.LTEACHER, JSON.stringify(!!state.teacherMode)); }catch(err){}; render(); }); }
+      var lsFiles=document.getElementById("ls-files"); if(lsFiles){ lsFiles.addEventListener("change", function(e){ handleLessonsFileInput(e.target.files); }); }
+      var qt=document.getElementById("q-type"); if(qt){ qt.addEventListener("change", function(e){ var t=e.target.value; var fmc=document.getElementById("q-form-mc"); var ftf=document.getElementById("q-form-tf"); var fsa=document.getElementById("q-form-sa"); if(fmc) fmc.classList.toggle("hidden", t!=="mc"); if(ftf) ftf.classList.toggle("hidden", t!=="tf"); if(fsa) fsa.classList.toggle("hidden", t!=="sa"); }); }
+      var qa=document.getElementById("q-add"); if(qa) qa.addEventListener("click", addQuestionMC);
+      var qatf=document.getElementById("q-add-tf"); if(qatf) qatf.addEventListener("click", addQuestionTF);
+      var qasa=document.getElementById("q-add-sa"); if(qasa) qasa.addEventListener("click", addQuestionSA);
+      var lsc=document.getElementById("ls-create"); if(lsc) lsc.addEventListener("click", createLesson);
+      var lsList=document.getElementById("lessons-list"); if(lsList){ lsList.addEventListener("click", function(e){ var b=e.target.closest && e.target.closest("[data-open-lesson]"); if(!b) return; openLesson(+b.dataset.openLesson); }); }
+      var lsSide=document.getElementById("lessons-side"); if(lsSide){ lsSide.addEventListener("click", function(e){ var b=e.target.closest && e.target.closest("[data-open-lesson]"); if(!b) return; state.activeTab="lessons"; render(); openLesson(+b.dataset.openLesson); }); }
+      var lvClose=document.getElementById("lv-close"); if(lvClose){ lvClose.addEventListener("click", closeLesson); }
+      var lvFiles=document.getElementById("lv-files"); if(lvFiles){ lvFiles.addEventListener("click", function(e){ var b=e.target.closest && e.target.closest("[data-file-idx]"); if(!b) return; state.openLessonFileIdx = +b.dataset.fileIdx; renderLessonViewer(); }); }
+      var qf=document.getElementById("quiz-form"); if(qf){ qf.addEventListener("submit", gradeQuiz); }
+      var cc=document.getElementById("create-contest"); if(cc){ cc.addEventListener("click", function(){ state.activeTab="contests"; render(); var el=document.getElementById("contest-manager"); if(el && el.scrollIntoView) el.scrollIntoView({behavior:"smooth",block:"start"}); }); }
+      var lo=document.getElementById("logout-btn"); if(lo){ lo.addEventListener("click", logout); }
+  var usersBtn=document.getElementById('users-btn'); if(usersBtn){ usersBtn.addEventListener('click', openUsersPanel); }
+  var usersRefresh=document.getElementById('users-refresh'); if(usersRefresh){ usersRefresh.addEventListener('click', renderUsersPanel); }
+  var usersClose=document.getElementById('users-close'); if(usersClose){ usersClose.addEventListener('click', closeUsersPanel); }
+      var searchInput = document.getElementById("search");
+      if(searchInput){
+        var searchTimer = null;
+        searchInput.addEventListener("input", function(e){
+          clearTimeout(searchTimer);
+          var val = (e.target.value||"").toString();
+          searchTimer = setTimeout(function(){
+            state.searchQuery = val.trim() === "" ? null : val;
+            renderFeed();
+          }, 220);
+        });
+        searchInput.addEventListener("keydown", function(e){
+          if(e.key === "Escape"){ searchInput.value = ""; state.searchQuery = null; renderFeed(); }
+        });
+      }
+    }
+
+    // ------- Users panel helpers -------
+    function openUsersPanel(){
+      var el = document.getElementById('users-panel'); if(!el) return; el.classList.add('show'); el.setAttribute('aria-hidden','false'); renderUsersPanel();
+    }
+    function closeUsersPanel(){ var el=document.getElementById('users-panel'); if(!el) return; el.classList.remove('show'); el.setAttribute('aria-hidden','true'); }
+    function renderUsersPanel(){
+      var box = document.getElementById('users-list'); if(!box) return; box.innerHTML='';
+      var users = [];
+      try{ users = JSON.parse(localStorage.getItem(LOCAL_KEYS.USERS)||'null') || []; }catch(e){ users = []; }
+      if(!users.length){ box.innerHTML = '<div class="muted">No users registered yet.</div>'; return; }
+      users.forEach(function(u){
+        var row = document.createElement('div'); row.className='user-row';
+        var left = document.createElement('div'); left.className='user-left';
+        var av = document.createElement('div'); av.className='lb-avatar'; av.textContent = u.avatar || (u.name? u.name[0] : 'U');
+        var info = document.createElement('div'); info.innerHTML = '<div style="font-weight:700">'+esc(u.name)+'</div><div class="muted" style="font-size:12px">'+esc(u.email||'')+'</div>';
+        left.appendChild(av); left.appendChild(info);
+        var actions = document.createElement('div'); actions.className='user-actions';
+        var edit = document.createElement('button'); edit.className='btn'; edit.textContent='Edit'; edit.addEventListener('click', function(){ editUser(u.id); });
+        var del = document.createElement('button'); del.className='btn ghost'; del.textContent='Delete'; del.addEventListener('click', function(){ if(confirm('Delete user '+u.name+'?')) deleteUser(u.id); });
+        actions.appendChild(edit); actions.appendChild(del);
+        row.appendChild(left); row.appendChild(actions);
+        box.appendChild(row);
+      });
+    }
+    function deleteUser(id){
+      try{
+        var users = JSON.parse(localStorage.getItem(LOCAL_KEYS.USERS)||'null') || [];
+        var idx = -1; for(var i=0;i<users.length;i++){ if(users[i].id===id){ idx=i; break; } }
+        if(idx<0) return; if(users[idx].id===me.id){ alert('Cannot delete current signed-in user.'); return; }
+        users.splice(idx,1); localStorage.setItem(LOCAL_KEYS.USERS, JSON.stringify(users)); renderUsersPanel(); broadcast('USERS_UPDATED', null);
+      }catch(e){}
+    }
+    function editUser(id){
+      try{
+        var users = JSON.parse(localStorage.getItem(LOCAL_KEYS.USERS)||'null') || [];
+        var u = null; for(var i=0;i<users.length;i++){ if(users[i].id===id){ u=users[i]; break; } }
+        if(!u) return; var newName = prompt('Edit name', u.name||''); if(newName==null) return; var newAvatar = prompt('Avatar initials', u.avatar||''); if(newAvatar==null) return;
+        u.name = newName.trim()||u.name; u.avatar = (newAvatar.trim()||u.avatar);
+        localStorage.setItem(LOCAL_KEYS.USERS, JSON.stringify(users));
+        // if edited user is current me, update ME and AUTH
+        if(me && me.id===u.id){ try{ me.name=u.name; me.avatar=u.avatar; localStorage.setItem(LOCAL_KEYS.ME, JSON.stringify(me)); var a=JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||'null')||{}; a.name = me.name; localStorage.setItem(LOCAL_KEYS.AUTH, JSON.stringify(a)); }catch(e){} }
+        renderUsersPanel(); broadcast('USERS_UPDATED', {userId:id});
+      }catch(e){}
+    }
+
+    (function boot(){ if(!ensureAuthOrRedirect()) return; loadMe(); loadState(); wire(); setupSync(); render(); })();
+  </script>
+</body>
+</html>
