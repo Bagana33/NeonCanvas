@@ -181,6 +181,27 @@
     .rank-pulse{animation:pulseGlow 1.6s ease-in-out}
     @media (max-width: 900px){.layout{grid-template-columns:1fr;gap:16px}.tabs{display:none}.nav-rt input{display:none}}
   </style>
+
+  <!-- Supabase Integration -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+    const supabase = createClient(
+      import.meta.env.NEXT_PUBLIC_SUPABASE_URL,
+      import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    // Insert (save post)
+    async function savePost(content) {
+      await supabase.from('posts').insert([{ text: content }]);
+    }
+
+    // Load posts
+    async function loadPosts() {
+      const { data } = await supabase.from('posts').select('*');
+      console.log(data);
+    }
+  </script>
 </head>
 <body>
   <div id="bg-layer" class="bg-layer"></div>
