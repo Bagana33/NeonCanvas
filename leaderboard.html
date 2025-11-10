@@ -50,6 +50,7 @@
     .btn.primary{background:linear-gradient(90deg,var(--accent-c),var(--accent-a))}
     .small{font-size:12px;color:#a5b4fc}
     @media (max-width: 900px){.wrap{grid-template-columns:1fr}.row{grid-template-columns:36px 1fr 92px 110px}}
+    use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
   </style>
 </head>
 <body>
@@ -141,6 +142,29 @@
   </main>
 
   <script>
+    (function removeInjectedChat(){
+      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      function purge(root){
+        if(!root || !root.querySelectorAll) return;
+        selectors.forEach(function(sel){
+          root.querySelectorAll(sel).forEach(function(node){ try{ node.remove(); }catch(_){} });
+        });
+      }
+      purge(document);
+      var observer=new MutationObserver(function(mutations){
+        mutations.forEach(function(m){
+          m.addedNodes && m.addedNodes.forEach(function(node){
+            if(node && node.nodeType===1){
+              if(node.shadowRoot) purge(node.shadowRoot);
+              purge(node);
+            }
+          });
+        });
+      });
+      try{ observer.observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
+      window.addEventListener('beforeunload',function(){ try{ observer.disconnect(); }catch(_){} });
+    })();
+
     var LOCAL_KEYS = { BG:"neon_bg_v1", ME:"neon_me_v1" };
     var STUDENTS_KEY = "neon_students15_v1";
 

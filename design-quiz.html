@@ -23,7 +23,8 @@
     .explain{margin-top:8px;color:#cfe6ff;background:rgba(12,22,40,0.4);padding:10px;border-radius:6px}
     .footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;color:var(--muted)}
     .download{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
-    .score-badge{font-weight:700;padding:6px 10px;border-radius:8px}
+  .score-badge{font-weight:700;padding:6px 10px;border-radius:8px}
+  use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
     .good{background:rgba(34,197,94,0.12);color:var(--good)}
     .avg{background:rgba(234,179,8,0.09);color:#d97706}
     .bad{background:rgba(239,68,68,0.08);color:var(--bad)}
@@ -56,6 +57,29 @@
   </div>
 
   <script>
+    (function removeInjectedChat(){
+      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      function purge(root){
+        if(!root || !root.querySelectorAll) return;
+        selectors.forEach(function(sel){
+          root.querySelectorAll(sel).forEach(function(node){ try{ node.remove(); }catch(_){} });
+        });
+      }
+      purge(document);
+      var observer=new MutationObserver(function(mutations){
+        mutations.forEach(function(m){
+          m.addedNodes && m.addedNodes.forEach(function(node){
+            if(node && node.nodeType===1){
+              if(node.shadowRoot) purge(node.shadowRoot);
+              purge(node);
+            }
+          });
+        });
+      });
+      try{ observer.observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
+      window.addEventListener('beforeunload',function(){ try{ observer.disconnect(); }catch(_){} });
+    })();
+
     // Graphic-design-focused questions (Mongolian). Each has choices, correct index and an explanation.
     var questions = [
       { q: '1. CMYK ба RGB хоёрын аль нь хэвлэлд (print) илүү тохиромжтой вэ?', choices: ['RGB','CMYK','HSB'], correct: 1,

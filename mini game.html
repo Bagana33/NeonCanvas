@@ -22,6 +22,7 @@
     .score{font-weight:700;font-size:18px}
     .hint{font-size:13px;color:#b6c3d6}
     .small{font-size:13px}
+    use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
   </style>
 </head>
 <body>
@@ -64,6 +65,29 @@
   </div>
 
   <script>
+    (function removeInjectedChat(){
+      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      function purge(root){
+        if(!root || !root.querySelectorAll) return;
+        selectors.forEach(function(sel){
+          root.querySelectorAll(sel).forEach(function(node){ try{ node.remove(); }catch(_){} });
+        });
+      }
+      purge(document);
+      var observer=new MutationObserver(function(mutations){
+        mutations.forEach(function(m){
+          m.addedNodes && m.addedNodes.forEach(function(node){
+            if(node && node.nodeType===1){
+              if(node.shadowRoot) purge(node.shadowRoot);
+              purge(node);
+            }
+          });
+        });
+      });
+      try{ observer.observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
+      window.addEventListener('beforeunload',function(){ try{ observer.disconnect(); }catch(_){} });
+    })();
+
     // Mini Poster Match Game
     // Layout: both canvases draw 3 rectangle bands and a central circle. Target has random colors; player can change shape colors.
     var targetCanvas = document.getElementById('target'); var tctx = targetCanvas.getContext('2d');

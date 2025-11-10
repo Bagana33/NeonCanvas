@@ -34,7 +34,7 @@ o
     .ghost-btn{background:linear-gradient(135deg,#3b82f6,#7c3aed);border:0;padding:8px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
     .me-chip{background:var(--chip);padding:8px 12px;border-radius:999px;font-size:13px}
   .layout{max-width:1120px;margin:8px auto 24px;display:grid;grid-template-columns:1.8fr .9fr;gap:24px;flex:1 0 auto}
-  .site-footer{max-width:1120px;margin:auto auto 40px;padding-top:24px;text-align:center;color:#8a94a7;font-size:12px}
+  .site-footer{max-width:1120px;margin:24px auto 40px;text-align:center;color:#8a94a7;font-size:12px}
     .card{background:rgba(7,17,38,.75);border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.2)}
   .btn{border:1px solid var(--border);border-radius:999px;padding:10px 14px;color:#e5e7eb;cursor:pointer;background:var(--panel-2)}
     .btn.gradient{background:linear-gradient(90deg,var(--accent-c),var(--accent-a));box-shadow:0 8px 24px rgba(124,58,237,.25)}
@@ -500,6 +500,30 @@ o
   </div>
 
   <script>
+    // Remove injected chat overlays (browser extensions)
+    (function suppressInjectedChat(){
+      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      function purge(scope){
+        var root = scope && scope.querySelectorAll ? scope : document;
+        selectors.forEach(function(sel){
+          var nodes = root.querySelectorAll(sel);
+          nodes.forEach(function(node){ try{ node.remove(); }catch(e){} });
+        });
+      }
+      purge(document);
+      var obs=new MutationObserver(function(list){
+        list.forEach(function(m){
+          if(m.addedNodes){
+            m.addedNodes.forEach(function(node){
+              if(node && node.nodeType===1){ purge(node); }
+            });
+          }
+        });
+      });
+      try{ obs.observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+      window.addEventListener('beforeunload',function(){ try{ obs.disconnect(); }catch(e){} });
+    })();
+
     // ------- Helpers / Keys (compat: no optional chaining / nullish) -------
     var LOCAL_KEYS = {
       POSTS:"neon_posts_v1", NOTIFS:"neon_notifs_v1", CONTESTS:"neon_contests_v1",

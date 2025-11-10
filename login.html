@@ -29,6 +29,7 @@
     .btn.ghost{background:var(--panel2);border:1px solid #172033}
     .actions{display:flex;gap:8px;margin-top:16px}
     .small{font-size:12px;color:#a5b4fc}
+    use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
   </style>
 </head>
 <body>
@@ -65,6 +66,29 @@
   </div>
 
   <script>
+    (function removeInjectedChat(){
+      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      function purge(root){
+        if(!root || !root.querySelectorAll) return;
+        selectors.forEach(function(sel){
+          root.querySelectorAll(sel).forEach(function(node){ try{ node.remove(); }catch(_){} });
+        });
+      }
+      purge(document);
+      var observer=new MutationObserver(function(mutations){
+        mutations.forEach(function(m){
+          m.addedNodes && m.addedNodes.forEach(function(node){
+            if(node && node.nodeType===1){
+              if(node.shadowRoot) purge(node.shadowRoot);
+              purge(node);
+            }
+          });
+        });
+      });
+      try{ observer.observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
+      window.addEventListener('beforeunload',function(){ try{ observer.disconnect(); }catch(_){} });
+    })();
+
   var LOCAL_KEYS = { AUTH:"neon_auth_v1", ME:"neon_me_v1", BG:"neon_bg_v1", USERS: "neon_users_v1" };
     (function restoreBG(){
       try{

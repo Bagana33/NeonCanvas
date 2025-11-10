@@ -51,6 +51,7 @@
     .react-emoji{font-size:16px}.react-count{font-size:12px;padding:2px 6px;border-radius:999px;background:rgba(148,163,184,.12);color:#cbd5e1}
     .notifs{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:8px}.notif{background:#06101a;padding:8px;border-radius:8px;color:#cbd5e1;font-size:14px}
     @media (max-width: 900px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+    use-chat-gpt-ai, use-chat-gpt-ai *, [class*="use-chat-gpt-ai"]{display:none !important}
   </style>
 </head>
 <body>
@@ -128,6 +129,29 @@
   </main>
 
   <script>
+    (function removeInjectedChat(){
+      var selectors=['use-chat-gpt-ai','[class*="use-chat-gpt-ai"]'];
+      function purge(root){
+        if(!root || !root.querySelectorAll) return;
+        selectors.forEach(function(sel){
+          root.querySelectorAll(sel).forEach(function(node){ try{ node.remove(); }catch(_){} });
+        });
+      }
+      purge(document);
+      var observer=new MutationObserver(function(mutations){
+        mutations.forEach(function(m){
+          m.addedNodes && m.addedNodes.forEach(function(node){
+            if(node && node.nodeType===1){
+              if(node.shadowRoot) purge(node.shadowRoot);
+              purge(node);
+            }
+          });
+        });
+      });
+      try{ observer.observe(document.documentElement,{childList:true,subtree:true}); }catch(_){}
+      window.addEventListener('beforeunload',function(){ try{ observer.disconnect(); }catch(_){} });
+    })();
+
     var LOCAL_KEYS = { POSTS:"neon_posts_v1", NOTIFS:"neon_notifs_v1", CONTESTS:"neon_contests_v1", BG:"neon_bg_v1", ME:"neon_me_v1", AUTH:"neon_auth_v1", LESSONS:"neon_lessons_v1", LPOINTS:"neon_lpoints_v1" };
     var REACTION_POINTS = { like:1, love:2, wow:1.5, fire:2.5, clap:1 };
     var REACTION_EMOJI  = { like:"👍", love:"❤️", wow:"😮", fire:"🔥", clap:"👏" };
