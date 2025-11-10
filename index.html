@@ -634,7 +634,14 @@ o
     function isAuthed(){ try{ var a=JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); return !!(a && a.loggedIn); }catch(e){ return false; } }
     function ensureAuthOrRedirect(){ if(!isAuthed()){ window.location.href='login.html'; return false; } return true; }
     function broadcast(type,payload){ if(bus){ try{ bus.postMessage({type:type,payload:payload}); }catch(e){} } try{ localStorage.setItem('neon_ping', String(Date.now())); }catch(e){} }
-    function logout(){ try{ localStorage.setItem(LOCAL_KEYS.AUTH, JSON.stringify({loggedIn:false})); }catch(e){} broadcast('AUTH_CHANGED',{loggedIn:false}); window.location.href='login.html'; }
+    function logout(){
+      if(window.supabaseClient && window.supabaseClient.auth){
+        try{ window.supabaseClient.auth.signOut(); }catch(err){ console.warn('Supabase signOut failed', err); }
+      }
+      try{ localStorage.setItem(LOCAL_KEYS.AUTH, JSON.stringify({loggedIn:false})); }catch(e){}
+      broadcast('AUTH_CHANGED',{loggedIn:false});
+      window.location.href='login.html';
+    }
 
     // ------- State -------
     var me = { id:3, name:"Enkhtuya D.", avatar:"ED", bio:"", avatarImage:null };

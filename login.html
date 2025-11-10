@@ -32,7 +32,18 @@
   use-chat-gpt-ai, use-chat-gpt-ai-content-menu,
   use-chat-gpt-ai *, use-chat-gpt-ai-content-menu *,
   [class*="use-chat-gpt-ai"], [class*="use-chat-gpt-ai-content-menu"]{display:none !important}
+    .tabs{display:flex;gap:8px;margin:16px 0 0}
+    .tabs button{flex:1;border:1px solid #172033;background:var(--panel2);color:#cbd5e1;border-radius:999px;padding:10px;font-size:14px;cursor:pointer;transition:.15s}
+    .tabs button.active{background:linear-gradient(90deg,var(--accent-c),var(--accent-a));color:#fff;box-shadow:0 12px 24px rgba(124,58,237,.35);border-color:transparent}
+    .field.hidden{display:none}
+    .status{margin-top:12px;font-size:12px;color:#facc15;min-height:16px}
+    .status.error{color:#f87171}
   </style>
+
+  <script>
+    window.__SUPABASE_URL__ = "https://jvnzbxmuasidddtzqycx.supabase.co";
+    window.__SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bnpieG11YXNpZGRkdHpxeWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NTE0MzMsImV4cCI6MjA3ODMyNzQzM30.K6ZIZFxG9uk5YrK3Ebw2SDVX_f9ftXqrZxeeQw-Visc";
+  </script>
 </head>
 <body>
   <div id="bg-layer" class="bg-layer"></div><div class="overlay"></div>
@@ -54,8 +65,14 @@
           <option value="teacher">Teacher</option>
         </select>
       </div>
+      <div class="field"><label for="in-password">Нууц үг</label><input id="in-password" type="password" placeholder="••••••••" autocomplete="current-password" /></div>
+      <div class="field" id="confirm-field"><label for="in-confirm">Нууц үг давт</label><input id="in-confirm" type="password" placeholder="••••••••" autocomplete="new-password" /></div>
+      <div class="tabs">
+        <button id="tab-signin" class="active" type="button">Sign in</button>
+        <button id="tab-signup" type="button">Register</button>
+      </div>
       <div class="actions">
-        <button id="btn-signin" class="btn primary" style="flex:1">Sign in</button>
+        <button id="btn-submit" class="btn primary" style="flex:1">Sign in</button>
         <button id="btn-guest" class="btn ghost" style="flex:1">Continue as Guest</button>
       </div>
       <div class="row">
@@ -63,11 +80,14 @@
         <button id="btn-bg" class="btn ghost">Set Background</button>
         <input id="bg-file" type="file" accept="image/*" hidden />
       </div>
-      <p class="small" style="margin-top:12px">Demo only — no server. Auth state is stored in your browser (localStorage).</p>
+      <div id="status" class="status"></div>
+      <p class="small" style="margin-top:12px">E-mail / password нь Supabase Auth дээр хадгалагдана. Demo зорилгоор Remember me нь браузерт state хадгална.</p>
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
     (function removeInjectedChat(){
       var selectors=[
         'use-chat-gpt-ai',
@@ -97,6 +117,15 @@
     })();
 
   var LOCAL_KEYS = { AUTH:"neon_auth_v1", ME:"neon_me_v1", BG:"neon_bg_v1", USERS: "neon_users_v1" };
+    var SUPABASE_URL = (window.__SUPABASE_URL__||"").trim();
+    var SUPABASE_ANON_KEY = (window.__SUPABASE_ANON_KEY__||"").trim();
+    var supabaseClient = null;
+    if(SUPABASE_URL && SUPABASE_ANON_KEY){
+      supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }else{
+      console.warn("Supabase config missing for login page");
+    }
+
     (function restoreBG(){
       try{
         var raw = localStorage.getItem(LOCAL_KEYS.BG)||"null";
@@ -115,8 +144,10 @@
     function setAuthLoggedIn(cfg){
       cfg = cfg || {};
       var email = (cfg.email||"").trim();
-      var name = cfg.name || "User";
+      var name = cfg.name || cfg.fullName || "User";
       var initials = cfg.initials || (name? name.split(' ').map(function(s){return s[0]}).join('').slice(0,2).toUpperCase() : "U");
+      var supabaseId = cfg.supabaseId || (cfg.supabaseUser && (cfg.supabaseUser.id || cfg.supabaseUser.user_id));
+      var role = cfg.role || (cfg.supabaseUser && cfg.supabaseUser.user_metadata && cfg.supabaseUser.user_metadata.role) || 'student';
 
       // load or init users registry
       var users = [];
@@ -130,14 +161,16 @@
           // update name/avatar if changed
           me.name = name || me.name;
           me.avatar = initials || me.avatar;
+          me.supabaseId = supabaseId || me.supabaseId;
+          me.role = role || me.role;
         } else {
           // create new user record
-          me = { id: Date.now(), email: email, name: name, avatar: initials, bio: "", avatarImage: null };
+          me = { id: Date.now(), email: email, name: name, avatar: initials, bio: "", avatarImage: null, supabaseId: supabaseId||null, role: role };
           users.push(me);
         }
       } else {
         // guest or email-less user: create ephemeral user record (still persist so they appear in ME)
-        me = { id: Date.now(), email: "", name: name || "Guest", avatar: initials || "G", bio: "", avatarImage: null };
+        me = { id: Date.now(), email: "", name: name || "Guest", avatar: initials || "G", bio: "", avatarImage: null, supabaseId: supabaseId||null, role: role };
         users.push(me);
       }
 
@@ -145,9 +178,7 @@
       try{
         localStorage.setItem(LOCAL_KEYS.USERS, JSON.stringify(users));
         localStorage.setItem(LOCAL_KEYS.ME, JSON.stringify(me));
-        // save role selection into AUTH so other pages can read permissions
-        var role = cfg.role || 'student';
-        localStorage.setItem(LOCAL_KEYS.AUTH, JSON.stringify({ loggedIn:true, userId: me.id, email: email, name: me.name, at: Date.now(), role: role }));
+        localStorage.setItem(LOCAL_KEYS.AUTH, JSON.stringify({ loggedIn:true, userId: me.id, email: email, name: me.name, at: Date.now(), role: role, supabaseId: supabaseId||null }));
       }catch(e){}
       broadcast('ME_UPDATED', me);
       broadcast('AUTH_CHANGED', { loggedIn:true });
@@ -155,15 +186,88 @@
     function isLoggedIn(){ try{ var a = JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); return !!(a && a.loggedIn); }catch(e){ return false; } }
     if(isLoggedIn()) window.location.href='index.html';
 
-    document.getElementById('btn-signin').addEventListener('click', function(){
+    var mode = 'signin';
+    var tabSignin = document.getElementById('tab-signin');
+    var tabSignup = document.getElementById('tab-signup');
+    var btnSubmit = document.getElementById('btn-submit');
+    var confirmField = document.getElementById('confirm-field');
+    var statusEl = document.getElementById('status');
+
+    function setMode(next){
+      mode = next;
+      tabSignin.classList.toggle('active', mode==='signin');
+      tabSignup.classList.toggle('active', mode==='signup');
+      confirmField.classList.toggle('hidden', mode!=='signup');
+      btnSubmit.textContent = mode==='signin' ? 'Sign in' : 'Register';
+      statusEl.textContent='';
+      statusEl.classList.remove('error');
+    }
+
+    tabSignin.addEventListener('click', function(){ setMode('signin'); });
+    tabSignup.addEventListener('click', function(){ setMode('signup'); });
+
+    async function handleSubmit(){
+      if(!supabaseClient){ alert('Supabase тохиргоо олдсонгүй.'); return; }
       var email = (document.getElementById('in-email').value||"").trim();
       var name  = (document.getElementById('in-name').value||"").trim();
       var ini   = (document.getElementById('in-initials').value||"").trim();
       var role  = (document.getElementById('in-role').value||'student');
-      if(!email || !name){ alert('Имэйл болон Нэр 2-ыг бөглөнө үү.'); return; }
-      setAuthLoggedIn({email:email,name:name,initials:ini, role: role});
-      window.location.href='index.html';
-    });
+      var password = (document.getElementById('in-password').value||"");
+      var confirm = (document.getElementById('in-confirm').value||"");
+      if(!email){ alert('Имэйл заавал хэрэгтэй.'); return; }
+      if(!password){ alert('Нууц үг оруулна уу.'); return; }
+      if(mode==='signup' && password.length < 6){ alert('Нууц үг дор хаяж 6 тэмдэгт байна.'); return; }
+      if(mode==='signup' && password !== confirm){ alert('Нууц үг таарахгүй байна.'); return; }
+      if(mode==='signup' && !name){ alert('Нэр оруулна уу.'); return; }
+      statusEl.textContent = mode==='signup' ? 'Sign up хийж байна...' : 'Sign in хийж байна...';
+      statusEl.classList.remove('error');
+      btnSubmit.disabled = true;
+      try{
+        if(mode==='signup'){
+          var signupRes = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+              data: { full_name: name, initials: ini, role: role }
+            }
+          });
+          if(signupRes.error){ throw signupRes.error; }
+          var user = signupRes.data && signupRes.data.user;
+          if(!user){
+            statusEl.textContent = 'Бүртгэл амжилттай. И-мэйлээ шалгана уу.';
+            btnSubmit.disabled=false;
+            return;
+          }
+          setAuthLoggedIn({ email: email, name: name, initials: ini, role: role, supabaseId: user.id, supabaseUser: user });
+          window.location.href='index.html';
+          return;
+        }
+        var signInRes = await supabaseClient.auth.signInWithPassword({ email:email, password:password });
+        if(signInRes.error){ throw signInRes.error; }
+        var userIn = signInRes.data && signInRes.data.user;
+        if(!userIn){ throw new Error('Хэрэглэгч олдсонгүй.'); }
+        var meta = (userIn.user_metadata)||{};
+        setAuthLoggedIn({
+          email: userIn.email||email,
+          name: meta.full_name || name || userIn.email,
+          initials: meta.initials || ini,
+          role: meta.role || role,
+          supabaseId: userIn.id,
+          supabaseUser: userIn
+        });
+        window.location.href='index.html';
+      }catch(err){
+        console.error('Auth error', err);
+        statusEl.textContent = (err && err.message) ? err.message : 'Алдаа гарлаа.';
+        statusEl.classList.add('error');
+      }finally{
+        btnSubmit.disabled = false;
+      }
+    }
+
+    btnSubmit.addEventListener('click', function(){ handleSubmit(); });
+    document.addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ var focused=document.activeElement; if(focused && focused.tagName==='INPUT'){ ev.preventDefault(); handleSubmit(); } } });
+
     document.getElementById('btn-guest').addEventListener('click', function(){
       // guest defaults to a student role
       setAuthLoggedIn({ email:"", name:"Guest", initials:"G", role: 'student' });
