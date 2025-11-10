@@ -199,6 +199,7 @@ o
 
     const SUPABASE_URL = (window.__SUPABASE_URL__ || "").trim();
     const SUPABASE_ANON_KEY = (window.__SUPABASE_ANON_KEY__ || "").trim();
+    const POSTS_TABLE = "posts";
 
     let supabaseClient = null;
     if (SUPABASE_URL && SUPABASE_ANON_KEY) {
@@ -207,26 +208,70 @@ o
       console.warn("Supabase config missing. Set window.__SUPABASE_URL__ and window.__SUPABASE_ANON_KEY__ before this script runs.");
     }
 
-    // Insert (save post)
-    async function savePost(content) {
-      if (!supabaseClient) throw new Error("Supabase client not initialised. Configure SUPABASE_URL / SUPABASE_ANON_KEY.");
-      const { error } = await supabaseClient.from('posts').insert([{ text: content }]);
-      if (error) {
-        console.error('Supabase insert failed', error);
-        throw error;
+    const clonePost = (post) => {
+      try {
+        return JSON.parse(JSON.stringify(post));
+      } catch (err) {
+        console.warn("Failed to clone post payload for Supabase", err);
+        return Object.assign({}, post);
       }
-    }
+    };
 
-    // Load posts
-    async function loadPosts() {
-      if (!supabaseClient) throw new Error("Supabase client not initialised. Configure SUPABASE_URL / SUPABASE_ANON_KEY.");
-      const { data, error } = await supabaseClient.from('posts').select('*');
+    const normaliseRow = (row) => {
+      if (!row) return null;
+      let payload = row.payload;
+      if (payload && typeof payload === "string") {
+        try {
+          payload = JSON.parse(payload);
+        } catch (err) {
+          console.warn("Failed to parse payload JSON from Supabase row", err);
+          payload = null;
+        }
+      }
+      let post = payload && typeof payload === "object" ? payload : {};
+      if (!post.id) post.id = row.id || Date.now();
+      if (!post.createdAt) {
+        post.createdAt = row.created_at ? (Date.parse(row.created_at) || Date.now()) : Date.now();
+      }
+      if (!post.reactions || typeof post.reactions !== "object") post.reactions = {};
+      if (!Array.isArray(post.comments)) post.comments = [];
+      post._supabaseId = row.id || null;
+      post._supabaseCreatedAt = row.created_at || null;
+      post._supabaseUpdatedAt = row.updated_at || null;
+      return post;
+    };
+
+    const savePost = async (post) => {
+      if (!supabaseClient) {
+        console.warn("Supabase client not initialised; skipping remote post save.");
+        return null;
+      }
+      const payload = clonePost(post);
+      if (!payload.createdAt) payload.createdAt = Date.now();
+      const record = { payload };
+      const { data, error } = await supabaseClient.from(POSTS_TABLE).insert(record).select();
       if (error) {
-        console.error('Supabase select failed', error);
+        console.error("Supabase insert failed", error);
         throw error;
       }
-      return data;
-    }
+      if (Array.isArray(data) && data.length) {
+        return normaliseRow(data[0]);
+      }
+      return null;
+    };
+
+    const loadPosts = async () => {
+      if (!supabaseClient) return [];
+      const { data, error } = await supabaseClient
+        .from(POSTS_TABLE)
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("Supabase select failed", error);
+        throw error;
+      }
+      return Array.isArray(data) ? data.map(normaliseRow).filter(Boolean) : [];
+    };
 
     window.supabaseClient = supabaseClient;
     window.savePostToSupabase = savePost;
@@ -634,6 +679,39 @@ o
       try{ localStorage.setItem(LOCAL_KEYS.LESSONS, JSON.stringify(state.lessons)); }catch(e){}
     }
     function saveLessonScores(){ try{ localStorage.setItem(LOCAL_KEYS.LPOINTS, JSON.stringify(state.lessonScores)); }catch(e){} }
+
+    function normalizePostShape(post){
+      if(!post || typeof post !== "object") return { id: Date.now(), title:"", description:"", reactions:{}, comments:[], createdAt: Date.now() };
+      var clone = Object.assign({}, post);
+      if(typeof clone.createdAt === "string"){
+        var parsed = Date.parse(clone.createdAt);
+        clone.createdAt = isNaN(parsed)? Date.now(): parsed;
+      }else if(typeof clone.createdAt !== "number"){
+        clone.createdAt = Date.now();
+      }
+      if(!clone.reactions || typeof clone.reactions !== "object") clone.reactions = {};
+      if(!Array.isArray(clone.comments)) clone.comments = [];
+      return clone;
+    }
+
+    function syncPostsFromSupabase(opts){
+      opts = opts || {};
+      if(!(window.loadPostsFromSupabase && typeof window.loadPostsFromSupabase === "function")) return Promise.resolve(null);
+      return window.loadPostsFromSupabase().then(function(remotePosts){
+        if(!Array.isArray(remotePosts)) return null;
+        if(!remotePosts.length && !opts.force) return null;
+        var normalized = remotePosts.map(normalizePostShape);
+        state.posts = normalized;
+        saveState();
+        recalcUserPoints(true);
+        render();
+        broadcast('POSTS_UPDATED', null);
+        return normalized;
+      }).catch(function(err){
+        console.warn("Supabase sync failed", err);
+        return null;
+      });
+    }
 
     function recalcUserPoints(initial){
       if(typeof initial==='undefined') initial=false;
@@ -1214,6 +1292,16 @@ o
       document.getElementById("composer-title").value=""; document.getElementById("composer-desc").value=""; state.previewDataUrl=null; state.previewMeta=null; document.getElementById("composer-preview-wrap").classList.add("hidden"); document.getElementById("composer-preview").src="";
       if(newPost.contestId) joinContest(newPost.contestId, newPost.id);
       recalcUserPoints(); saveState(); render(); broadcast('POSTS_UPDATED', null);
+      if(window.savePostToSupabase){
+        try{
+          var supaPromise = window.savePostToSupabase(newPost);
+          if(supaPromise && typeof supaPromise.then === "function"){
+            supaPromise.then(function(){ return syncPostsFromSupabase(); }).catch(function(err){ console.warn("Supabase savePostToSupabase failed", err); });
+          }
+        }catch(err){
+          console.warn("Supabase savePostToSupabase threw", err);
+        }
+      }
       setTimeout(function(){ var el = document.querySelector('article.post[data-post="'+newPost.id+'"]'); if(el && el.scrollIntoView) el.scrollIntoView({ behavior:"smooth", block:"center" }); },0);
     }
 
@@ -1389,7 +1477,7 @@ o
       }catch(e){}
     }
 
-    (function boot(){ if(!ensureAuthOrRedirect()) return; loadMe(); loadState(); wire(); setupSync(); render(); })();
+    (function boot(){ if(!ensureAuthOrRedirect()) return; loadMe(); loadState(); wire(); setupSync(); render(); syncPostsFromSupabase(); })();
   </script>
 </body>
 </html>
