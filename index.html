@@ -715,12 +715,66 @@ o
       { id:101, userId:1, title:"Neon City Poster", description:"A quick exploration of neon gradients and depth for a cyberpunk poster.", image:"https://images.unsplash.com/photo-1505685296765-3a2736de412f?q=80&w=1200&auto=format&fit=crop", reactions:{ like:4, love:2, wow:1 }, comments:[{ id:1, userId:2, text:"Love the glow — nice balance!" }], createdAt: (Date.now() - 1000*60*60*24) },
       { id:102, userId:2, title:"Logo concepts — minimal", description:"Minimal mark for a modern coffee brand — playing with negative space.", image:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop", reactions:{ like:8, love:5, wow:0, fire:1 }, comments:[], createdAt: (Date.now() - 1000*60*60*6) }
     ];
+    var defaultLessons = [
+      { 
+        id: Date.now(), 
+        title: "Graphic Design Basics - Character Illustration", 
+        subject: "Graphic Design", 
+        grade: "Beginner", 
+        teacher: "Design Teacher",
+        description: "Learn the fundamentals of character design and illustration. Study the playful character in this example and answer questions about design principles.",
+        files: [
+          {
+            id: Date.now(),
+            name: "character-design.jpg",
+            size: 156432,
+            mime: "image/jpeg",
+            dataUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3E%3Crect width='768' height='768' fill='%23f5f5f0'/%3E%3Cg transform='translate(384,384)'%3E%3Ccircle cx='0' cy='20' r='140' fill='%23fff' stroke='%23000' stroke-width='4'/%3E%3Cpath d='M-60,-20 Q-80,-60 -50,-80 L50,-80 Q80,-60 60,-20 Q40,0 0,20 Q-40,0 -60,-20 Z' fill='%23fff' stroke='%23000' stroke-width='4'/%3E%3Ccircle cx='-35' cy='-15' r='8' fill='%23000'/%3E%3Ccircle cx='35' cy='-15' r='8' fill='%23000'/%3E%3Cpath d='M-25,15 Q0,30 25,15' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M-60,-20 L-80,-50 Q-100,-70 -110,-50 L-120,-30 Q-115,-15 -100,-10 L-70,-5' fill='%23fff' stroke='%23000' stroke-width='4'/%3E%3Cpath d='M60,-20 L80,-50 Q100,-70 110,-50 L120,-30 Q115,-15 100,-10 L70,-5' fill='%23fff' stroke='%23000' stroke-width='4'/%3E%3Cellipse cx='0' cy='90' rx='50' ry='30' fill='%23ff6b9d' opacity='0.6'/%3E%3Cpath d='M-100,120 L-110,180 L-90,200 L-70,190 L-60,140' fill='%23fff' stroke='%23000' stroke-width='4'/%3E%3Cpath d='M100,120 L110,180 L90,200 L70,190 L60,140' fill='%23fff' stroke='%23000' stroke-width='4'/%3E%3Cellipse cx='-105' cy='195' rx='20' ry='12' fill='%23000'/%3E%3Cellipse cx='105' cy='195' rx='20' ry='12' fill='%23000'/%3E%3Cpath d='M-20,60 Q-30,80 -40,90 L-35,95 Q-25,85 -15,70 L-10,65 Z' fill='%23ff6b9d' opacity='0.8'/%3E%3Cpath d='M20,60 Q30,80 40,90 L35,95 Q25,85 15,70 L10,65 Z' fill='%23ff6b9d' opacity='0.8'/%3E%3Cg transform='translate(-60,-35)'%3E%3Cpath d='M0,0 L-3,-8 L3,-8 Z' fill='%23000'/%3E%3C/g%3E%3Cg transform='translate(60,-35)'%3E%3Cpath d='M0,0 L-3,-8 L3,-8 Z' fill='%23000'/%3E%3C/g%3E%3Cg opacity='0.3'%3E%3Ccircle cx='-80' cy='60' r='6' fill='%23ffd700'/%3E%3Cpath d='M-82,54 L-78,54 L-80,50 Z' fill='%23ffd700'/%3E%3Cpath d='M-82,66 L-78,66 L-80,70 Z' fill='%23ffd700'/%3E%3Cpath d='M-86,58 L-86,62 L-90,60 Z' fill='%23ffd700'/%3E%3Cpath d='M-74,58 L-74,62 L-70,60 Z' fill='%23ffd700'/%3E%3Ccircle cx='90' cy='-40' r='8' fill='%23ffd700'/%3E%3Cpath d='M88,-48 L92,-48 L90,-53 Z' fill='%23ffd700'/%3E%3Cpath d='M88,-32 L92,-32 L90,-27 Z' fill='%23ffd700'/%3E%3Cpath d='M82,-42 L82,-38 L77,-40 Z' fill='%23ffd700'/%3E%3Cpath d='M98,-42 L98,-38 L103,-40 Z' fill='%23ffd700'/%3E%3C/g%3E%3Cpath d='M-15,-55 Q-25,-70 -15,-85 Q-5,-75 0,-65 Q5,-75 15,-85 Q25,-70 15,-55' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E",
+            ephemeral: false
+          }
+        ],
+        quiz: [
+          {
+            id: Date.now() + 1,
+            type: "mc",
+            q: "What is the dominant shape used in this character design?",
+            opts: ["Circles and curves", "Sharp angles", "Rectangles", "Triangles"],
+            correct: 0,
+            points: 10
+          },
+          {
+            id: Date.now() + 2,
+            type: "mc",
+            q: "Which color is used as an accent in this illustration?",
+            opts: ["Blue", "Pink/Red", "Green", "Yellow"],
+            correct: 1,
+            points: 10
+          },
+          {
+            id: Date.now() + 3,
+            type: "tf",
+            q: "The character design uses simple, bold outlines which is typical of modern illustration.",
+            answer: true,
+            points: 10
+          },
+          {
+            id: Date.now() + 4,
+            type: "sa",
+            q: "What emotion does this character design convey? (one word)",
+            answer: "happy",
+            points: 15
+          }
+        ],
+        attempts: [],
+        createdAt: Date.now() - 1000*60*60*2
+      }
+    ];
     function loadState(){
       try{ var bg=JSON.parse(localStorage.getItem(LOCAL_KEYS.BG)||"null"); if(bg && bg.dataUrl) applyBackground(bg.dataUrl,{persist:false}); }catch(e){}
       try{ var p=JSON.parse(localStorage.getItem(LOCAL_KEYS.POSTS)||"null"); state.posts = Array.isArray(p)?p: defaultPosts; }catch(e){ state.posts=defaultPosts; }
       try{ var c=JSON.parse(localStorage.getItem(LOCAL_KEYS.CONTESTS)||"null"); state.contests = Array.isArray(c)?c:[]; }catch(e){ state.contests=[]; }
       try{ var n=JSON.parse(localStorage.getItem(LOCAL_KEYS.NOTIFS)||"null"); state.notifications = Array.isArray(n)?n:[]; }catch(e){ state.notifications=[]; }
-      try{ var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null"); state.lessons = Array.isArray(l)?l:[]; }catch(e){ state.lessons=[]; }
+      try{ var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null"); state.lessons = Array.isArray(l)?l:defaultLessons; }catch(e){ state.lessons=defaultLessons; }
       try{ var s=JSON.parse(localStorage.getItem(LOCAL_KEYS.LPOINTS)||"null"); state.lessonScores = (s && typeof s==='object') ? s : {}; }catch(e){ state.lessonScores = {}; }
       try{ var t=JSON.parse(localStorage.getItem(LOCAL_KEYS.LTEACHER)||"null"); // prefer explicit auth role (from login) and ignore local toggle when role present
         if(state.role){
