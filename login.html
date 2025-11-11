@@ -203,8 +203,8 @@
       statusEl.classList.remove('error');
     }
 
-    tabSignin.addEventListener('click', function(){ setMode('signin'); });
-    tabSignup.addEventListener('click', function(){ setMode('signup'); });
+  tabSignin.addEventListener('click', function(){ setMode('signin'); });
+  tabSignup.addEventListener('click', function(){ setMode('signup'); });
 
     async function handleSubmit(){
       if(!supabaseClient){ alert('Supabase тохиргоо олдсонгүй.'); return; }
@@ -287,6 +287,8 @@
       };
       reader.readAsDataURL(f);
     });
+
+      setMode(mode);
   </script>
 </body>
 </html>
