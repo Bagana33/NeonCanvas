@@ -7,52 +7,80 @@ o
   <title>NeonCanvas (Home · Contests · Lessons) — Compat</title>
   <style>
     :root{
-      --bg:#0b0f19; --panel:#071126; --panel-2:#081026; --border:#1f2937;
-      --ink:#dbeafe; --muted:#94a3b8; --chip:#0b1220;
-      --accent-a:#7c3aed; --accent-b:#ec4899; --accent-c:#06b6d4;
+      --bg:#0a0e1a; --panel:#0d1321; --panel-2:#0f1626; --border:#1e293b;
+      --ink:#f0f4f8; --muted:#94a3b8; --chip:#0e1420;
+      --accent:#8b5cf6; --accent-a:#8b5cf6; --accent-b:#ec4899; --accent-c:#06b6d4;
+      --glow-purple:rgba(139,92,246,0.4); --glow-pink:rgba(236,72,153,0.35);
       --like:#60a5fa; --love:#fb7185; --wow:#fbbf24; --fire:#fb923c; --clap:#34d399;
       --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
     }
     *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#e5e7eb}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);
+    background:radial-gradient(circle at 20% 30%, rgba(139,92,246,0.08), transparent 40%),
+               radial-gradient(circle at 80% 70%, rgba(236,72,153,0.06), transparent 50%),
+               radial-gradient(circle at 50% 50%, rgba(6,182,212,0.04), transparent 60%), var(--bg)}
   .app{min-height:100vh;display:flex;flex-direction:column}
   use-chat-gpt-ai, use-chat-gpt-ai-content-menu,
   use-chat-gpt-ai *, use-chat-gpt-ai-content-menu *,
   [class*="use-chat-gpt-ai"], [class*="use-chat-gpt-ai-content-menu"]{display:none !important}
-    .bg-layer{position:fixed; inset:0; z-index:-1; background:var(--bg); background-attachment:fixed; transition:opacity .25s ease, filter .25s ease}
-    .bg-layer.has-image{background-size:cover; background-position:center; background-repeat:no-repeat}
+    .bg-layer{position:fixed; inset:0; z-index:-1; background:transparent; background-attachment:fixed; transition:opacity .3s cubic-bezier(0.4,0,0.2,1), filter .3s cubic-bezier(0.4,0,0.2,1)}
+    .bg-layer.has-image{background-size:cover; background-position:center; background-repeat:no-repeat;
+      box-shadow:0 0 80px rgba(0,0,0,0.5) inset}
     .topbar{max-width:1120px;margin:0 auto;padding:16px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(135deg,#7c3aed,#ec4899); box-shadow:0 20px 40px rgba(236,72,153,.25); font-weight:700}
+      background:linear-gradient(135deg,var(--accent),var(--accent-b)); 
+      box-shadow:0 8px 24px var(--glow-pink), 0 0 40px var(--glow-purple) inset; font-weight:700;
+      transition:transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease}
+    .logo:hover{transform:scale(1.05); box-shadow:0 12px 32px var(--glow-pink), 0 0 50px var(--glow-purple) inset}
     .brand h1{margin:0;font-size:18px}
     .nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:12px}
-    .tabs{display:flex;gap:8px;background:#0f1724;border-radius:999px;padding:6px}
-    .tabs .tab{background:transparent;border:0;color:#cbd5e1;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;transition:.2s transform;text-decoration:none;display:inline-block}
-    .tabs .tab:hover{transform:scale(1.05)}
-    .tabs .tab.is-active{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:white;box-shadow:0 8px 24px rgba(124,58,237,.35)}
+    .tabs{display:flex;gap:8px;background:rgba(15,23,36,0.6);border-radius:999px;padding:6px;
+      backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.06)}
+    .tabs .tab{background:transparent;border:0;color:#cbd5e1;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1);text-decoration:none;display:inline-block;position:relative}
+    .tabs .tab:hover{transform:translateY(-1px); color:var(--ink)}
+    .tabs .tab.is-active{background:linear-gradient(90deg,var(--accent),var(--accent-b));color:white;
+      box-shadow:0 8px 24px var(--glow-purple), 0 4px 12px var(--glow-pink)}
     .nav-rt{display:flex;align-items:center;gap:10px}
     .nav-rt input{display:block;width:260px;background:#0b1220;border:1px solid #172033;border-radius:999px;padding:8px 12px;color:#e2e8f0;font-size:13px}
     .ghost-btn{background:linear-gradient(135deg,#3b82f6,#7c3aed);border:0;padding:8px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
     .me-chip{background:var(--chip);padding:8px 12px;border-radius:999px;font-size:13px}
   .layout{max-width:1120px;margin:8px auto 24px;display:grid;grid-template-columns:1.8fr .9fr;gap:24px;flex:1 0 auto}
   .site-footer{max-width:1120px;margin:24px auto 40px;text-align:center;color:#8a94a7;font-size:12px}
-    .card{background:rgba(7,17,38,.75);border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.2)}
-  .btn{border:1px solid var(--border);border-radius:999px;padding:10px 14px;color:#e5e7eb;cursor:pointer;background:var(--panel-2)}
-    .btn.gradient{background:linear-gradient(90deg,var(--accent-c),var(--accent-a));box-shadow:0 8px 24px rgba(124,58,237,.25)}
-    .btn.pink{background:linear-gradient(90deg,var(--accent-a),var(--accent-b))}
-    .btn.ghost{background:#0b1220;border:1px solid #172033}
+    .card{background:rgba(13,19,33,0.7);border:1px solid var(--border); border-radius:20px; padding:18px; 
+      box-shadow:0 8px 32px rgba(0,0,0,0.3), 0 0 1px rgba(139,92,246,0.15) inset;
+      backdrop-filter:blur(16px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+    .card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,0.4), 0 0 2px var(--glow-purple) inset}
+  .btn{border:1px solid var(--border);border-radius:999px;padding:10px 16px;color:var(--ink);cursor:pointer;
+    background:var(--panel-2);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);font-weight:500;position:relative;overflow:hidden}
+    .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);
+      opacity:0;transition:opacity 0.3s ease}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.25)}
+    .btn:hover::before{opacity:1}
+    .btn.gradient{background:linear-gradient(90deg,var(--accent-c),var(--accent));
+      box-shadow:0 8px 24px rgba(139,92,246,0.35), 0 4px 12px rgba(6,182,212,0.2)}
+    .btn.gradient:hover{box-shadow:0 12px 32px rgba(139,92,246,0.5), 0 6px 16px rgba(6,182,212,0.3)}
+    .btn.pink{background:linear-gradient(90deg,var(--accent),var(--accent-b));
+      box-shadow:0 8px 24px var(--glow-purple)}
+    .btn.pink:hover{box-shadow:0 12px 32px var(--glow-pink)}
+    .btn.ghost{background:rgba(11,18,32,0.5);border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(8px)}
     .btn.full{width:100%}
     .upload{border:1px dashed #334155;border-radius:999px;padding:8px 12px;font-size:13px;cursor:pointer}
     .maincol{display:flex;flex-direction:column;align-items:center}
     .composer,.post,.manager,.lesson-card,.lesson-view{max-width:720px;width:100%;margin-inline:auto}
-    .composer{display:flex;gap:16px;align-items:flex-start;transition:box-shadow .25s ease, outline .2s ease}
-    .composer--focused{outline:1px solid var(--accent-a);box-shadow:0 16px 48px rgba(124,58,237,.28),0 0 0 2px rgba(6,182,212,.15) inset}
+    .composer{display:flex;gap:18px;align-items:flex-start;
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+    .composer--focused{outline:2px solid var(--accent);
+      box-shadow:0 16px 48px var(--glow-purple), 0 0 0 3px rgba(6,182,212,0.2) inset, 0 8px 24px var(--glow-pink);
+      transform:translateY(-2px)}
     .avatar{width:48px;height:48px;border-radius:999px;background:#111827;display:flex;align-items:center;justify-content:center;overflow:hidden}
     .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-    .input{width:100%;background:transparent;color:#fff;border:0;outline:none}
-    .input.title{border-bottom:1px solid #20304a;padding:8px 0;font-size:16px}
-    .input.desc{margin-top:8px;height:84px;resize:none;font-size:14px}
+    .input{width:100%;background:transparent;color:var(--ink);border:0;outline:none;
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+    .input.title{border-bottom:2px solid rgba(32,48,74,0.6);padding:10px 0;font-size:16px;font-weight:500}
+    .input.title:focus{border-bottom-color:var(--accent);color:var(--ink)}
+    .input.desc{margin-top:10px;height:88px;resize:none;font-size:14px}
     .composer-actions{display:flex;align-items:center;gap:10px;margin-top:10px}
     .composer-affix{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
     .composer-affix label{font-size:12px;color:#9aa6b2}
@@ -74,7 +102,10 @@ o
   .leader-points{background:linear-gradient(90deg,var(--accent-c),var(--accent-a));color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px;box-shadow:0 8px 20px rgba(124,58,237,.12)}
   .leader-pos{font-size:12px;color:var(--muted);background:transparent}
   .leaderboard li:hover{transform:translateY(-3px);transition:transform .18s ease}
-    .post{background:rgba(7,17,38,.7);border:1px solid var(--border);border-radius:16px;padding:16px;position:relative}
+    .post{background:rgba(13,19,33,0.65);border:1px solid var(--border);border-radius:18px;padding:18px;position:relative;
+      box-shadow:0 6px 24px rgba(0,0,0,0.25), 0 0 1px rgba(139,92,246,0.1) inset;
+      backdrop-filter:blur(12px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+    .post:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,0.35), 0 0 2px var(--glow-purple) inset}
     .post-head{display:flex;justify-content:space-between;gap:10px}
     .post-user{display:flex;gap:10px}
     .post-user .avatar{width:48px;height:48px;font-size:12px}
@@ -103,10 +134,13 @@ o
     .contest-badge .dot{width:6px;height:6px;border-radius:999px;background:#a78bfa}
     .actions{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
     .react-row{display:flex;gap:8px;flex-wrap:wrap}
-    .react-btn{background:#0b1220;border:1px solid #172033;border-radius:999px;padding:6px 10px;font-size:13px;color:#e5e7eb;cursor:pointer;transition:.15s transform, .2s box-shadow, .2s border-color;display:inline-flex;align-items:center;gap:8px}
-    .react-btn:hover{transform:translateY(-1px)}
-    .react-btn.bump{animation:reactBump .22s ease}
-    @keyframes reactBump{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-1px) scale(1.08)}100%{transform:translateY(0) scale(1)}}
+    .react-btn{background:rgba(11,18,32,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:999px;padding:7px 12px;
+      font-size:13px;color:var(--ink);cursor:pointer;
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1);display:inline-flex;align-items:center;gap:8px;
+      backdrop-filter:blur(8px)}
+    .react-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+    .react-btn.bump{animation:reactBump .28s cubic-bezier(0.4,0,0.2,1)}
+    @keyframes reactBump{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.1)}100%{transform:translateY(0) scale(1)}}
   /* Reaction animations: emoji pop, count bump, floating emoji and post points pulse */
   .react-emoji.pop{animation:reactPop .36s cubic-bezier(.2,.8,.2,1); transform-origin:center}
   .react-count.bump{animation:countBump .28s ease}

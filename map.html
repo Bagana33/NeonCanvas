@@ -5,24 +5,55 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Map · Leaderboard positions</title>
   <style>
-    :root{ --bg:#071126; --panel:#0b1220; --muted:#94a3b8; --accent:#7c3aed; }
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#e5e7eb}
+    :root{ 
+      --bg:#0a0e1a; --panel:#0d1321; --muted:#94a3b8; 
+      --accent:#8b5cf6; --accent-b:#ec4899; --accent-c:#06b6d4;
+      --glow-purple:rgba(139,92,246,0.4); --glow-pink:rgba(236,72,153,0.35);
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:radial-gradient(circle at 25% 30%, rgba(139,92,246,0.1), transparent 50%),
+                 radial-gradient(circle at 75% 70%, rgba(236,72,153,0.08), transparent 55%), var(--bg);
+      color:#f0f4f8}
     .wrap{max-width:1100px;margin:18px auto;padding:18px}
-    h1{margin:0 0 8px;font-size:18px}
+    h1{margin:0 0 10px;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--accent-b));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
     .content{display:flex;gap:16px}
-    .map-wrap{position:relative;flex:1;height:640px;border-radius:12px;overflow:hidden;background:#000}
+    .map-wrap{position:relative;flex:1;height:640px;border-radius:16px;overflow:hidden;background:#000;
+      box-shadow:0 12px 48px rgba(0,0,0,0.4), 0 0 2px var(--glow-purple) inset;
+      border:1px solid rgba(139,92,246,0.2);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+    .map-wrap:hover{box-shadow:0 16px 60px rgba(0,0,0,0.5), 0 0 4px var(--glow-purple) inset}
     .map-img{width:100%;height:100%;object-fit:cover;display:block}
-    .marker{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer}
-    .marker .dot{width:20px;height:20px;background:linear-gradient(90deg,var(--accent),#06b6d4);border-radius:50%;box-shadow:0 8px 20px rgba(124,58,237,.18);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
-    .marker .label{margin-top:6px;background:rgba(2,6,23,.8);padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);font-size:13px;white-space:nowrap}
-    .panel{width:320px;background:var(--panel);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03)}
+    .marker{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+    .marker:hover{transform:translate(-50%,-100%) scale(1.15);z-index:10}
+    .marker .dot{width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-c));
+      border-radius:50%;box-shadow:0 8px 24px var(--glow-purple), 0 0 16px var(--glow-pink) inset;
+      display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+      border:2px solid rgba(255,255,255,0.3)}
+    .marker .label{margin-top:8px;background:rgba(13,19,33,0.85);padding:6px 10px;border-radius:10px;
+      border:1px solid rgba(139,92,246,0.3);font-size:13px;white-space:nowrap;
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);backdrop-filter:blur(8px)}
+    .panel{width:320px;background:rgba(13,19,33,0.7);border-radius:16px;padding:16px;
+      border:1px solid rgba(139,92,246,0.2);box-shadow:0 8px 32px rgba(0,0,0,0.3), 0 0 1px var(--glow-purple) inset;
+      backdrop-filter:blur(16px);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+    .panel:hover{box-shadow:0 12px 40px rgba(0,0,0,0.4), 0 0 2px var(--glow-purple) inset}
     .leader{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto}
-    .leader-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(0,0,0,0.02));cursor:pointer}
-    .leader-item:hover{box-shadow:0 8px 24px rgba(0,0,0,.45)}
+    .leader-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:12px;
+      background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(236,72,153,0.06));cursor:pointer;
+      border:1px solid rgba(139,92,246,0.2);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+    .leader-item:hover{transform:translateY(-3px);
+      box-shadow:0 8px 24px rgba(0,0,0,0.3), 0 0 20px var(--glow-purple) inset}
     .muted{color:var(--muted);font-size:13px}
     .empty{color:var(--muted);padding:12px}
     .controls{display:flex;gap:8px;margin-bottom:8px}
-  .btn{background:linear-gradient(90deg,#06b6d4,#7c3aed);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .btn{background:linear-gradient(90deg,var(--accent-c),var(--accent));border:0;color:#fff;padding:9px 14px;
+    border-radius:999px;cursor:pointer;font-weight:500;box-shadow:0 6px 20px rgba(139,92,246,0.3);
+    transition:all 0.3s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden}
+  .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+    opacity:0;transition:opacity 0.3s ease}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(139,92,246,0.5)}
+  .btn:hover::before{opacity:1}
   .small{font-size:13px;color:var(--muted)}
   use-chat-gpt-ai, use-chat-gpt-ai-content-menu,
   use-chat-gpt-ai *, use-chat-gpt-ai-content-menu *,
