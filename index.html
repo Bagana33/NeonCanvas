@@ -324,6 +324,7 @@ o
             <span class="file-name">No file chosen</span>
             <input id="bg-file" type="file" accept="image/*" />
           </label>
+          <a id="dashboard-btn" class="ghost-btn" href="dashboard.html" style="display:none" title="Admin dashboard">Dashboard</a>
           <button id="bg-reset" class="ghost-btn" title="Reset BG">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#fff" viewBox="0 0 24 24"><path d="M12 6V3L8 7l4 4V8c2.757 0 5 2.243 5 5a5 5 0 0 1-9.584 2.001l-1.832.804A7 7 0 1 0 12 6z"/></svg>
             <span>Reset</span>
@@ -1152,7 +1153,7 @@ o
   var tgl=document.getElementById("ls-teacher-toggle"); if(tgl) tgl.checked=!!state.teacherMode; var cr=document.getElementById("ls-creator"); if(cr) cr.classList.toggle("hidden", !state.teacherMode);
   // role-based UI: hide/disable create controls for non-teachers
   try{ var _auth = JSON.parse(localStorage.getItem(LOCAL_KEYS.AUTH)||"null"); var _authRole = _auth && _auth.role; }catch(e){ var _authRole = null; }
-  var isTeacher = (_authRole === 'teacher') || (state.role === 'teacher') || !!state.teacherMode;
+  var isTeacher = (_authRole === 'teacher' || _authRole === 'admin') || (state.role === 'teacher' || state.role === 'admin') || !!state.teacherMode;
   var createContestBtn = document.getElementById('create-contest'); if(createContestBtn) createContestBtn.classList.toggle('hidden', !isTeacher);
   var cmCreateBtn = document.getElementById('cm-create'); if(cmCreateBtn) cmCreateBtn.classList.toggle('hidden', !isTeacher);
   var contestNewBtn = document.getElementById('contest-new-btn'); if(contestNewBtn) contestNewBtn.classList.toggle('hidden', !isTeacher);
@@ -1162,6 +1163,7 @@ o
   var lsToggleLabel = document.getElementById('ls-teacher-toggle'); if(lsToggleLabel && lsToggleLabel.parentElement){ lsToggleLabel.parentElement.style.display = isTeacher ? '' : 'none'; }
   // show Users button to teachers
   var usersBtnEl = document.getElementById('users-btn'); if(usersBtnEl) usersBtnEl.style.display = isTeacher ? '' : 'none';
+  var dashBtnEl = document.getElementById('dashboard-btn'); if(dashBtnEl) dashBtnEl.style.display = isTeacher ? '' : 'none';
     }
 
     // ------- Actions -------
