@@ -783,8 +783,23 @@ o
       try{ var c=JSON.parse(localStorage.getItem(LOCAL_KEYS.CONTESTS)||"null"); state.contests = Array.isArray(c)?c:[]; }catch(e){ state.contests=[]; }
       try{ var n=JSON.parse(localStorage.getItem(LOCAL_KEYS.NOTIFS)||"null"); state.notifications = Array.isArray(n)?n:[]; }catch(e){ state.notifications=[]; }
       try{ 
-        var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null"); 
+        var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null");
+        var needsUpdate = false;
         if(!Array.isArray(l) || l.length === 0) {
+          needsUpdate = true;
+        } else {
+          // Check if lessons have old SVG data - force update
+          for(var i=0; i<l.length; i++) {
+            if(l[i].files && l[i].files.length > 0) {
+              var firstFile = l[i].files[0];
+              if(firstFile.dataUrl && firstFile.dataUrl.indexOf('data:image/svg') === 0) {
+                needsUpdate = true;
+                break;
+              }
+            }
+          }
+        }
+        if(needsUpdate) {
           state.lessons = defaultLessons;
           localStorage.setItem(LOCAL_KEYS.LESSONS, JSON.stringify(defaultLessons));
         } else {
