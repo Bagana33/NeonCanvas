@@ -774,7 +774,18 @@ o
       try{ var p=JSON.parse(localStorage.getItem(LOCAL_KEYS.POSTS)||"null"); state.posts = Array.isArray(p)?p: defaultPosts; }catch(e){ state.posts=defaultPosts; }
       try{ var c=JSON.parse(localStorage.getItem(LOCAL_KEYS.CONTESTS)||"null"); state.contests = Array.isArray(c)?c:[]; }catch(e){ state.contests=[]; }
       try{ var n=JSON.parse(localStorage.getItem(LOCAL_KEYS.NOTIFS)||"null"); state.notifications = Array.isArray(n)?n:[]; }catch(e){ state.notifications=[]; }
-      try{ var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null"); state.lessons = Array.isArray(l)?l:defaultLessons; }catch(e){ state.lessons=defaultLessons; }
+      try{ 
+        var l=JSON.parse(localStorage.getItem(LOCAL_KEYS.LESSONS)||"null"); 
+        if(!Array.isArray(l) || l.length === 0) {
+          state.lessons = defaultLessons;
+          localStorage.setItem(LOCAL_KEYS.LESSONS, JSON.stringify(defaultLessons));
+        } else {
+          state.lessons = l;
+        }
+      }catch(e){ 
+        state.lessons=defaultLessons; 
+        try{ localStorage.setItem(LOCAL_KEYS.LESSONS, JSON.stringify(defaultLessons)); }catch(err){}
+      }
       try{ var s=JSON.parse(localStorage.getItem(LOCAL_KEYS.LPOINTS)||"null"); state.lessonScores = (s && typeof s==='object') ? s : {}; }catch(e){ state.lessonScores = {}; }
       try{ var t=JSON.parse(localStorage.getItem(LOCAL_KEYS.LTEACHER)||"null"); // prefer explicit auth role (from login) and ignore local toggle when role present
         if(state.role){
