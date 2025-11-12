@@ -223,6 +223,30 @@ o
   </style>
 
   <script>
+    // Feature flags loader (GPT-5 enablement)
+    (function loadFlags(){
+      var KEY='neon_flags_v1';
+      function apply(flags){
+        try{
+          window.__GPT5_ENABLED__ = !!(flags && flags.gpt5Enabled);
+          window.__AI_MODEL__ = (flags && flags.aiModel) || 'gpt-5';
+          document.documentElement.classList.toggle('gpt5-enabled', !!(flags && flags.gpt5Enabled));
+        }catch(e){}
+      }
+      try{
+        fetch('flags.json', { cache:'no-store' }).then(function(r){
+          if(!r.ok) throw new Error('flags '+r.status);
+          return r.json();
+        }).then(function(json){ try{ localStorage.setItem(KEY, JSON.stringify({ ts: Date.now(), gpt5Enabled: !!json.gpt5Enabled, aiModel: json.aiModel||'gpt-5' })); }catch(e){}
+          apply(json);
+        }).catch(function(){
+          try{ var cached = JSON.parse(localStorage.getItem(KEY)||'null')||{}; apply(cached); }catch(e){}
+        });
+      }catch(err){ try{ var cached = JSON.parse(localStorage.getItem(KEY)||'null')||{}; apply(cached); }catch(e){} }
+    })();
+  </script>
+
+  <script>
     window.__SUPABASE_URL__ = "https://jvnzbxmuasidddtzqycx.supabase.co";
     window.__SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bnpieG11YXNpZGRkdHpxeWN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NTE0MzMsImV4cCI6MjA3ODMyNzQzM30.K6ZIZFxG9uk5YrK3Ebw2SDVX_f9ftXqrZxeeQw-Visc";
   </script>
