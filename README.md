@@ -1,73 +1,124 @@
-NeonCanvas — Quick publish guide
-================================
+# 🎨 NeonCanvas
 
-This folder contains the static site (HTML/CSS/JS). The following files were added to help publish the project to free hosting.
+Дизайн сургалтын интерактив платформ - React + MongoDB full-stack application.
 
-Files created
-- `CNAME` — placeholder for a custom domain (replace with your domain if you have one)
-- `publish.sh` — quick publish script (zsh-compatible). Usage documented below.
-- `README.md` — this file (instructions).
+## 📋 Тойм
 
-Prerequisites
-- Git installed and configured (git user.email and user.name)
-- A GitHub account (for GitHub Pages) or a Cloudflare account (for Cloudflare Pages) if you want a custom domain + reliable hosting
-- Optional: a free domain from Freenom (e.g. .tk / .ml / .ga / .cf / .gq)
+NeonCanvas нь дизайн сургалт явуулах, ажлаа хуваалцах, тэмцээнд оролцох боломжтой платформ юм. Сурагчид дизайн хийж оноо цуглуулж, рейтингээ өсгөх боломжтой.
 
-Recommended quick paths
-1) Quick (no custom domain): GitHub Pages (fastest)
-   - Create a new GitHub repository and push this project. See the "Quick publish" section below.
-   - GitHub Pages will host at `https://<username>.github.io/<repo>/` (or at `https://<username>.github.io/` if you name your repo `<username>.github.io`).
+### Онцлогууд
 
-2) Free custom domain (recommended): Freenom + Cloudflare Pages
-   - Register a free domain at Freenom.
-   - Add domain to Cloudflare, update Freenom nameservers to Cloudflare's.
-   - Deploy to Cloudflare Pages (connect GitHub). Cloudflare will serve at your custom domain with HTTPS.
+- 🎨 **Пост хуваалцах**: Дизайнаа оруулж оноо цуглуулах
+- 👍 **Reactions**: Like, Love, Wow, Fire, Clap
+- 🏆 **Leaderboard**: Оноогоор эрэмбэлэгдсэн рейтинг
+- 📚 **Хичээлүүд**: Quiz-тэй хичээлүүд
+- 🗺️ **Тэмцээнүүд**: Design challenge-үүд
+- 👤 **Profile**: Хэрэглэгчийн статистик, rank
+- 📊 **Dashboard**: Багш/админы статистик
 
-Quick publish (script)
-----------------------
-Make the script executable and run it. The script will initialize a git repo (if needed), create a commit, and push to a remote if you provide one.
+## 🏗️ Технологи
 
-Usage (from repository root):
+### Frontend (/app)
+- React 18 + TypeScript
+- Tailwind CSS (Neon gradient дизайн)
+- Vite (build tool)
+- React Router (routing)
+- JWT authentication
+
+### Backend (/backend)
+- Node.js + Express.js
+- MongoDB + Mongoose
+- JWT tokens
+- bcryptjs (password hashing)
+
+## 🚀 Суулгах
+
+### 1. MongoDB суулгах/ажиллуулах
+
+**macOS:**
+```bash
+brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb-community
+```
+
+**Ubuntu/Linux:**
+```bash
+sudo apt install mongodb
+sudo systemctl start mongodb
+```
+
+### 2. Backend суулгах
 
 ```bash
-# make script executable once
-chmod +x publish.sh
-
-# Option A: you already created a GitHub repo and have the remote URL
-./publish.sh git@github.com:YOUR_USERNAME/YOUR_REPO.git main
-
-# Option B: no remote yet — script will init and commit; then it prints the commands to add a remote & push
-./publish.sh
+cd backend
+npm install
+cp .env.example .env
 ```
 
-What the script does
-- git init (if no .git)
-- git add --all; git commit -m "Site: initial publish"
-- if a remote URL is provided as the first argument, it adds it as origin and pushes to given branch (defaults to main)
-- otherwise it prints the commands you need to run to add the remote and push
-
-CNAME (custom domain)
-----------------------
-If you want to use a custom domain for GitHub Pages or another host, replace the contents of `CNAME` with your domain on a single line, e.g.:
-
-```
-yourdomain.tld
+`.env` файл засварлах:
+```env
+MONGODB_URI=mongodb://localhost:27017/neoncanvas
+JWT_SECRET=your-random-secret-key-here
+PORT=5000
+FRONTEND_URL=http://localhost:5173
 ```
 
-For GitHub Pages specifically: add `CNAME` with your domain and create a DNS A/CNAME record as documented by GitHub (A records for apex domain, CNAME for www).
+Backend ажиллуулах:
+```bash
+npm start
+```
 
-Cloudflare Pages and Netlify
-----------------------------
-- Cloudflare Pages: connect to your GitHub repo, deploy. Then add your custom domain in the Pages settings — Cloudflare will verify and issue TLS automatically if your domain is using Cloudflare nameservers.
-- Netlify: connect the repo, deploy, then add custom domain and configure DNS records or delegate DNS to Netlify.
+### 3. Frontend суулгах
 
-Notes / Caveats
-- Freenom domains are free but sometimes unreliable (short registration term or reclaim). Consider moving to a paid domain later.
-- If you use Cloudflare and point nameservers to Cloudflare, TLS and CDN are automatic.
-- If you want me to prepare the repo (README, .gitignore) and create a minimal CNAME value, I can — but I cannot create a GitHub repo or change DNS for you.
+Шинэ terminal нээж:
 
-Need help? Tell me:
-- Which provider you prefer (GitHub Pages / Cloudflare Pages / Netlify)
-- Whether you have a domain ready (if yes, paste it)
+```bash
+cd app
+npm install
+cp .env.example .env
+```
 
-I can then provide the exact DNS records/commands and a small checklist you can follow step-by-step.
+`.env` файл засварлах:
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Frontend ажиллуулах:
+```bash
+npm run dev
+```
+
+App `http://localhost:5173` дээр ажиллана.
+
+## 📁 Бүтэц
+
+```
+NeonCanvas/
+├── app/           # React frontend
+├── backend/       # Express.js API
+└── README.md      # Энэ файл
+```
+
+Дэлгэрэнгүй мэдээлэл:
+- Frontend: `app/README.md`
+- Backend: `backend/README.md`
+
+## 🔑 API Endpoints
+
+- `POST /api/auth/register` - Бүртгүүлэх
+- `POST /api/auth/login` - Нэвтрэх
+- `GET /api/posts` - Бүх постууд
+- `GET /api/users/leaderboard` - Leaderboard
+- `GET /api/lessons` - Хичээлүүд
+- `GET /api/contests` - Тэмцээнүүд
+
+Бүрэн жагсаалт: `backend/README.md`
+
+## 🎨 Дизайн
+
+Neon gradient theme - Purple/Pink/Cyan, Glass morphism UI
+
+## 👨‍💻 Author
+
+Developed with ❤️ for design education
